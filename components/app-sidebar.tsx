@@ -5,12 +5,16 @@ import { usePathname } from "next/navigation"
 import * as React from "react"
 import {
   IconArticle,
+  IconCamera,
   IconDotsVertical,
   IconFolder,
   IconHexagon,
   IconLayoutDashboard,
   IconLogout,
+  IconNews,
   IconSettings,
+  IconTags,
+  IconUsers,
   type TablerIcon,
 } from "@tabler/icons-react"
 
@@ -35,7 +39,12 @@ import Image from "next/image"
 const sectionIcons: Record<DashboardSectionId, TablerIcon> = {
   overview: IconLayoutDashboard,
   projects: IconFolder,
-  blog: IconArticle,
+  posts: IconArticle,
+  news: IconNews,
+  tags: IconTags,
+  "tech-stacks": IconHexagon,
+  screenshots: IconCamera,
+  users: IconUsers,
   settings: IconSettings,
 }
 
@@ -61,7 +70,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const userName = session?.user?.name?.trim() || "User"
   const userEmail = session?.user?.email || "user@example.com"
   const avatarText = userName.slice(0, 1).toUpperCase()
-  const userImage = session?.user?.image || "https://res.cloudinary.com/dkdteb9m5/image/upload/v1773650944/Frame_1_ucq2oa.png"
+  const userImage =
+    session?.user?.image ||
+    "https://res.cloudinary.com/dkdteb9m5/image/upload/v1773650944/Frame_1_ucq2oa.png"
+  const isAdmin =
+    typeof session?.user?.role === "string" &&
+    session.user.role.split(",").includes("admin")
+  const visibleSections = dashboardSections.filter(
+    (section) => !section.adminOnly || isAdmin
+  )
 
   return (
     <Sidebar variant="floating" {...props}>
@@ -70,8 +87,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link href="/dashboard" className="flex items-center gap-2">
-               <Image src={userImage} alt="Folio" width={48} height={48} className="rounded-full object-cover w-8 h-8" />
-               <span className="text-xl">Folio</span>
+                <Image
+                  src={userImage}
+                  alt="Folio"
+                  width={48}
+                  height={48}
+                  className="h-8 w-8 rounded-full object-cover"
+                />
+                <span className="text-xl">Folio</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -80,14 +103,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu className="gap-2">
-            {dashboardSections.map((item) => {
+            {visibleSections.map((item) => {
               const ItemIcon = sectionIcons[item.id]
               const isActive = activeSection.id === item.id
 
               return (
                 <SidebarMenuItem key={item.id}>
-                  <SidebarMenuButton asChild isActive={isActive} tooltip={item.label}>
-                    <Link href={item.href} className="font-medium text-muted-foreground">
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive}
+                    tooltip={item.label}
+                  >
+                    <Link
+                      href={item.href}
+                      className="font-medium text-muted-foreground"
+                    >
                       <ItemIcon />
                       <span>{item.label}</span>
                     </Link>
@@ -102,7 +132,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <div className="relative" ref={userMenuRef}>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton size="lg" onClick={() => setIsUserMenuOpen((open) => !open)}>
+              <SidebarMenuButton
+                size="lg"
+                onClick={() => setIsUserMenuOpen((open) => !open)}
+              >
                 <div className="flex size-8 items-center justify-center overflow-hidden rounded-full border bg-sidebar-accent text-xs font-semibold">
                   {session?.user?.image ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -116,7 +149,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   )}
                 </div>
                 <div className="flex flex-1 flex-col leading-tight">
-                  <span className="truncate text-sm font-medium">{userName}</span>
+                  <span className="truncate text-sm font-medium">
+                    {userName}
+                  </span>
                   <span className="truncate text-xs text-sidebar-foreground/70">
                     {userEmail}
                   </span>
@@ -138,7 +173,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               </Link>
               <button
                 type="button"
-                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-left hover:bg-muted"
+                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-muted"
                 onClick={async () => {
                   setIsUserMenuOpen(false)
                   await signOut({

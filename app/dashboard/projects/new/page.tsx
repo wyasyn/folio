@@ -1,17 +1,9 @@
 import { NewProjectForm } from "@/components/dashboard/projects/new-project-form"
 import db from "@/lib/db"
-import { auth } from "@/lib/auth"
-import { headers } from "next/headers"
-import { redirect } from "next/navigation"
+import { getDashboardSession } from "@/lib/authz"
 
 export default async function NewProjectPage() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  })
-
-  if (!session?.user) {
-    redirect("/login")
-  }
+  const session = await getDashboardSession()
 
   const techStacks = await db.techStack.findMany({
     select: { name: true },

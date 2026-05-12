@@ -1,5 +1,5 @@
 export type UploadPreset = {
-  folder: "projects" | "avatars"
+  folder: "projects" | "avatars" | "posts" | "news"
   maxSizeMB: number
   dropTitle: string
   dropHint: string
@@ -27,5 +27,19 @@ export const uploadPresets = {
     dropTitle: "Drop project screenshots here",
     dropHint: "Add multiple images — PNG, JPG, WebP or GIF (max. 5MB each)",
     selectLabel: "Select images",
+  },
+  postCover: {
+    folder: "posts",
+    maxSizeMB: 5,
+    dropTitle: "Drop your post cover here",
+    dropHint: "SVG, PNG, JPG or GIF (max. 5MB)",
+    selectLabel: "Select image",
+  },
+  newsCover: {
+    folder: "news",
+    maxSizeMB: 5,
+    dropTitle: "Drop your news cover here",
+    dropHint: "SVG, PNG, JPG or GIF (max. 5MB)",
+    selectLabel: "Select image",
   },
 } satisfies Record<string, UploadPreset>

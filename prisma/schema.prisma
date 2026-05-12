@@ -98,6 +98,9 @@ model user {
   bio           String?
   location      String?
   role          String  @default("user")
+  banned        Boolean @default(false)
+  banReason     String?
+  banExpires    DateTime?
 
   // Social & contact links
   website     String?
@@ -150,6 +153,7 @@ model session {
   userAgent String?
   userId    String
   user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  impersonatedBy String?
 
   @@index([userId])
 }

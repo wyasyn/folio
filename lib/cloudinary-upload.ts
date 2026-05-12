@@ -12,16 +12,16 @@ export const uploadImageToCloudinary = async (
   file: File,
   options?: {
     signatureEndpoint?: string
-    folder?: "projects" | "avatars"
-  },
+    folder?: "projects" | "avatars" | "posts" | "news"
+  }
 ) => {
   const signatureResponse = await fetch(
     options?.signatureEndpoint ?? "/api/uploads/cloudinary-signature",
     {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ folder: options?.folder }),
-    },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ folder: options?.folder }),
+    }
   )
 
   if (!signatureResponse.ok) {
@@ -47,7 +47,7 @@ export const uploadImageToCloudinary = async (
     {
       method: "POST",
       body: uploadBody,
-    },
+    }
   )
 
   if (!uploadResponse.ok) {

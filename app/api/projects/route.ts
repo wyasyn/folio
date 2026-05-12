@@ -1,8 +1,13 @@
 import { Prisma } from "@/generated/prisma/client"
 import db from "@/lib/db"
 import { auth } from "@/lib/auth"
-
-const MAX_SCREENSHOTS = 20
+import {
+  asOptionalString,
+  asRequiredString,
+  parseScreenshotUrls,
+  parseTechStackNames,
+  slugify,
+} from "@/lib/project-payload"
 
 type CreateProjectPayload = {
   title?: unknown
@@ -12,76 +17,9 @@ type CreateProjectPayload = {
   liveUrl?: unknown
   githubUrl?: unknown
   published?: unknown
+  featured?: unknown
   techStacks?: unknown
   screenshots?: unknown
-}
-
-const slugify = (value: string) =>
-  value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-
-const asRequiredString = (value: unknown): string | null => {
-  if (typeof value !== "string") return null
-  const trimmed = value.trim()
-  return trimmed.length > 0 ? trimmed : null
-}
-
-const asOptionalString = (value: unknown): string | null | undefined => {
-  if (value === undefined) return undefined
-  if (value === null) return null
-  if (typeof value !== "string") return undefined
-  const trimmed = value.trim()
-  return trimmed.length > 0 ? trimmed : null
-}
-
-const parseScreenshotUrls = (
-  value: unknown,
-):
-  | { ok: true; urls: string[] }
-  | { ok: false; error: string } => {
-  if (value === undefined || value === null) {
-    return { ok: true, urls: [] }
-  }
-  if (!Array.isArray(value)) {
-    return {
-      ok: false,
-      error: "screenshots must be an array of URL strings.",
-    }
-  }
-
-  const urls: string[] = []
-  const seen = new Set<string>()
-
-  for (const item of value) {
-    if (typeof item !== "string") {
-      return {
-        ok: false,
-        error: "Every screenshot must be a non-empty https URL string.",
-      }
-    }
-    const trimmed = item.trim()
-    if (!trimmed) continue
-    if (!trimmed.startsWith("https://")) {
-      return {
-        ok: false,
-        error: "Every screenshot URL must use https.",
-      }
-    }
-    if (seen.has(trimmed)) continue
-    seen.add(trimmed)
-    urls.push(trimmed)
-    if (urls.length > MAX_SCREENSHOTS) {
-      return {
-        ok: false,
-        error: `At most ${MAX_SCREENSHOTS} screenshots are allowed.`,
-      }
-    }
-  }
-
-  return { ok: true, urls }
 }
 
 export async function POST(request: Request) {
@@ -111,13 +49,6 @@ export async function POST(request: Request) {
     )
   }
 
-  if ((session.user as { role?: string }).role !== "admin") {
-    return Response.json(
-      { error: "Forbidden." },
-      { status: 403 },
-    )
-  }
-
   const title = payload.title.trim()
   const description = asRequiredString(payload.description)
   const content = asRequiredString(payload.content)
@@ -143,6 +74,9 @@ export async function POST(request: Request) {
     )
   }
 
+  const featured =
+    typeof payload.featured === "boolean" ? payload.featured : false
+
   const slug = slugify(title)
   if (!slug) {
     return Response.json(
@@ -151,19 +85,8 @@ export async function POST(request: Request) {
     )
   }
 
-  const parsedTechStacks =
-    Array.isArray(payload.techStacks) &&
-    payload.techStacks.every((item) => typeof item === "string")
-      ? Array.from(
-          new Set(
-            payload.techStacks
-          .map((item) => item.trim())
-              .filter((item) => item.length > 0),
-          ),
-        )
-      : []
-
-  if (parsedTechStacks.length === 0) {
+  const parsedTechStacks = parseTechStackNames(payload.techStacks)
+  if (!parsedTechStacks || parsedTechStacks.length === 0) {
     return Response.json(
       {
         error:
@@ -208,6 +131,7 @@ export async function POST(request: Request) {
         liveUrl: asOptionalString(payload.liveUrl),
         githubUrl: asOptionalString(payload.githubUrl),
         published: payload.published,
+        featured,
         updatedAt: new Date(),
         TechStack: {
           connect,

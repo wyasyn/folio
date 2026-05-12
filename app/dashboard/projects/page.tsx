@@ -1,13 +1,25 @@
-import { getDashboardSectionById } from "@/lib/dashboard-navigation"
+import { Suspense } from "react"
 import Link from "next/link"
 import { IconPlus } from "@tabler/icons-react"
 import { Button } from "@/components/ui/button"
+import { getDashboardSectionById } from "@/lib/dashboard-navigation"
+import { ProjectsList } from "@/components/dashboard/projects/projects-list"
+import { ProjectsTableSkeleton } from "@/components/dashboard/projects/projects-table-skeleton"
 
-export default function ProjectsPage() {
+type ProjectsPageProps = {
+  searchParams: Promise<{ page?: string }>
+}
+
+export default async function ProjectsPage({ searchParams }: ProjectsPageProps) {
+  const params = await searchParams
+  const rawPage = Number.parseInt(params.page ?? "1", 10)
+  const page =
+    Number.isFinite(rawPage) && rawPage >= 1 ? Math.floor(rawPage) : 1
+
   const projectsSection = getDashboardSectionById("projects")
 
   return (
-    <section className="space-y-4">
+    <section className="flex flex-col gap-4">
       <div>
         <h1 className="text-2xl font-semibold text-foreground">
           {projectsSection.label}
@@ -25,12 +37,9 @@ export default function ProjectsPage() {
           </Link>
         </Button>
       </div>
-      <div className="rounded-xl border bg-card p-6">
-        <h2 className="text-lg font-medium text-foreground">Project Queue</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          No pending updates yet. Add a project to start building your showcase.
-        </p>
-      </div>
+      <Suspense key={page} fallback={<ProjectsTableSkeleton />}>
+        <ProjectsList page={page} />
+      </Suspense>
     </section>
   )
 }

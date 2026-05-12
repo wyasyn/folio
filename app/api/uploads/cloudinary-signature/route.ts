@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto"
 
-const ALLOWED_FOLDERS = new Set(["projects", "avatars"])
+const ALLOWED_FOLDERS = new Set(["projects", "avatars", "posts", "news"])
 
 export async function POST(request: Request) {
   const cloudName = process.env.CLOUDINARY_CLOUD_NAME
@@ -10,11 +10,13 @@ export async function POST(request: Request) {
   if (!cloudName || !apiKey || !apiSecret) {
     return Response.json(
       { error: "Cloudinary environment variables are not configured." },
-      { status: 500 },
+      { status: 500 }
     )
   }
 
-  const body = (await request.json().catch(() => null)) as { folder?: string } | null
+  const body = (await request.json().catch(() => null)) as {
+    folder?: string
+  } | null
   const folder =
     body?.folder && ALLOWED_FOLDERS.has(body.folder) ? body.folder : "projects"
 

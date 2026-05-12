@@ -7,12 +7,17 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
+import { getDashboardSession } from "@/lib/authz"
 
 type DashboardLayoutProps = {
   children: ReactNode
 }
 
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
+export default async function DashboardLayout({
+  children,
+}: DashboardLayoutProps) {
+  await getDashboardSession()
+
   return (
     <SidebarProvider
       style={
