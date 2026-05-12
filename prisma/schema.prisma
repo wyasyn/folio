@@ -15,7 +15,7 @@ model Post {
   description String?
   featured    Boolean  @default(false)
   readTime    Int      @default(0)
-  content     String?
+  content     String
   published   Boolean  @default(false)
   authorId    String
   createdAt   DateTime @default(now())
@@ -43,12 +43,31 @@ model Project {
   screenshots Screenshot[]
 }
 
+model News {
+  id          Int     @id @default(autoincrement())
+  title       String
+  slug        String  @unique
+  coverImage  String?
+  description String?
+  featured    Boolean @default(false)
+  readTime    Int     @default(0)
+
+  author    user     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  content   String
+  published Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  authorId  String
+  tags      Tag[]
+}
+
 model Tag {
   id        Int      @id @default(autoincrement())
   name      String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   Post      Post[]   @relation("PostTags")
+  News      News[]
 }
 
 model TechStack {
@@ -99,6 +118,7 @@ model user {
   Project   Project[]
   account   account[]
   session   session[]
+  news      News[]
 }
 
 model account {

@@ -103,6 +103,4 @@ pnpm dlx shadcn@latest add button
 
 Import from `@/components/ui/...` as in the [shadcn docs](https://ui.shadcn.com/docs).
 
-## License
 
-This project is private (`"private": true` in `package.json`). Add a `LICENSE` file and update this section if you open-source the repo.
