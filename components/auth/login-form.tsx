@@ -1,0 +1,120 @@
+"use client"
+
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import Link from "next/link"
+import { signIn } from "@/lib/auth-client"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { IconBrandGithub, IconEye, IconEyeOff, IconLoader2 } from "@tabler/icons-react"
+import { images } from "@/constants/images"
+import Image from "next/image"
+
+export function LoginForm() {
+  const router = useRouter()
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState("")
+
+  const handleEmailLogin = async (event: React.SyntheticEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setIsSubmitting(true)
+    setError("")
+
+    try {
+      const result = await signIn.email({
+        email,
+        password,
+        callbackURL: "/dashboard",
+      })
+
+      if (result?.error) {
+        setError(result.error.message ?? "Invalid credentials.")
+        return
+      }
+
+      router.push("/dashboard")
+      router.refresh()
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  return (
+    <div className="w-full max-w-md space-y-5">
+      <h1 className="text-4xl text-center">Login</h1>
+      <form onSubmit={handleEmailLogin} className="space-y-4">
+        <Input
+          type="email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          placeholder="Email"
+          required
+        />
+        <div className="relative">
+          <Input
+            type={showPassword ? "text" : "password"}
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            placeholder="Enter your password"
+            required
+            className="pr-10"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2"
+            aria-label={showPassword ? "Hide password" : "Show password"}
+          >
+            {showPassword ? <IconEyeOff className="h-4 w-4" /> : <IconEye className="h-4 w-4" />}
+          </button>
+        </div>
+
+        {error ? <p className="text-sm text-destructive">{error}</p> : null}
+
+        <Button className="w-full" type="submit" disabled={isSubmitting}>
+          {isSubmitting ? (
+            <span className="inline-flex items-center gap-2">
+              <IconLoader2 className="h-4 w-4 animate-spin" />
+              Signing in...
+            </span>
+          ) : (
+            "Log in"
+          )}
+        </Button>
+      </form>
+
+      <div className="flex items-center gap-3">
+        <span className="h-px flex-1 bg-border" />
+        <span className="text-xs text-muted-foreground">Or continue with</span>
+        <span className="h-px flex-1 bg-border" />
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => signIn.social({ provider: "google", callbackURL: "/dashboard" })}
+        >
+          <Image src={images.googleIcon} alt="Google" width={images.googleIcon.width} height={images.googleIcon.height} className="w-4 h-4 mr-2" /> Google
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => signIn.social({ provider: "github", callbackURL: "/dashboard" })}
+        >
+          <IconBrandGithub className="w-4 h-4 mr-2" /> GitHub
+        </Button>
+      </div>
+
+      <p className="text-center text-sm text-muted-foreground">
+        Don't have an account?{" "}
+        <Link href="/sign-up" className="underline underline-offset-4 hover:text-foreground">
+          Sign up
+        </Link>
+      </p>
+    </div>
+  )
+}

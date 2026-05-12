@@ -1,14 +1,15 @@
-import { Geist, Geist_Mono, Roboto, IBM_Plex_Sans } from "next/font/google"
+import { Roboto_Mono, Inter, Cantarell } from "next/font/google"
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@/lib/utils";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
-const ibmPlexSansHeading = IBM_Plex_Sans({subsets:['latin'],variable:'--font-heading'});
+const cantarellHeading = Cantarell({subsets:['latin'],weight:[ '400', '700'],style:['normal', 'italic'], variable:'--font-heading'});
 
-const roboto = Roboto({subsets:['latin'],variable:'--font-sans'})
+const roboto = Inter({subsets:['latin'],variable:'--font-sans'})
 
-const fontMono = Geist_Mono({
+const fontMono = Roboto_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
 })
@@ -22,10 +23,12 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn("antialiased", fontMono.variable, "font-sans", roboto.variable, ibmPlexSansHeading.variable)}
+      className={cn("antialiased", fontMono.variable, "font-sans", roboto.variable, cantarellHeading.variable)}
     >
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+        <TooltipProvider>{children}</TooltipProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

@@ -121,7 +121,7 @@
     @apply border-border outline-ring/50;
     }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-muted-foreground font-sans ;
     }
   button:not(:disabled), [role="button"]:not(:disabled) {
     cursor: pointer;
@@ -129,4 +129,44 @@
   html {
     @apply font-sans;
     }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading text-foreground font-normal;
+    }
+  
+}
+
+@layer components {
+  .ProseMirror pre code .hljs-comment,
+  .ProseMirror pre code .hljs-quote {
+    color: color-mix(in oklch, var(--muted-foreground) 85%, var(--foreground));
+  }
+
+  .ProseMirror pre code .hljs-keyword,
+  .ProseMirror pre code .hljs-selector-tag,
+  .ProseMirror pre code .hljs-literal,
+  .ProseMirror pre code .hljs-section,
+  .ProseMirror pre code .hljs-link {
+    color: oklch(0.66 0.16 260);
+  }
+
+  .ProseMirror pre code .hljs-string,
+  .ProseMirror pre code .hljs-title,
+  .ProseMirror pre code .hljs-name,
+  .ProseMirror pre code .hljs-type,
+  .ProseMirror pre code .hljs-attribute,
+  .ProseMirror pre code .hljs-symbol,
+  .ProseMirror pre code .hljs-bullet,
+  .ProseMirror pre code .hljs-addition,
+  .ProseMirror pre code .hljs-template-tag,
+  .ProseMirror pre code .hljs-template-variable {
+    color: oklch(0.73 0.15 145);
+  }
+
+  .ProseMirror pre code .hljs-number,
+  .ProseMirror pre code .hljs-regexp,
+  .ProseMirror pre code .hljs-meta,
+  .ProseMirror pre code .hljs-doctag,
+  .ProseMirror pre code .hljs-built_in {
+    color: oklch(0.73 0.14 70);
+  }
 }
