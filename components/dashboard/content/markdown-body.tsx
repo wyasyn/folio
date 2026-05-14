@@ -1,0 +1,139 @@
+"use client"
+
+import type { ComponentPropsWithoutRef, ReactNode } from "react"
+import { Children, isValidElement } from "react"
+import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
+import remarkMath from "remark-math"
+import rehypeKatex from "rehype-katex"
+import rehypeHighlight from "rehype-highlight"
+import type { Options as RehypeHighlightOptions } from "rehype-highlight"
+import rehypeRaw from "rehype-raw"
+import { all as lowlightAllGrammars } from "lowlight"
+import "katex/dist/katex.min.css"
+import { cn } from "@/lib/utils"
+import { parseVideoEmbedUrl } from "@/lib/content-markdown"
+
+const rehypeHighlightOptions: RehypeHighlightOptions = {
+  detect: true,
+  languages: lowlightAllGrammars,
+}
+
+const rehypeHighlightConfigured: [typeof rehypeHighlight, RehypeHighlightOptions] =
+  [rehypeHighlight, rehypeHighlightOptions]
+
+const remarkMathConfigured: [typeof remarkMath, { singleDollarTextMath: boolean }] =
+  [remarkMath, { singleDollarTextMath: true }]
+
+function Paragraph({
+  children,
+  ...rest
+}: ComponentPropsWithoutRef<"p">) {
+  const arr = Children.toArray(children)
+  if (arr.length === 1 && isValidElement(arr[0])) {
+    const href = (arr[0].props as { href?: string }).href
+    if (parseVideoEmbedUrl(href)) {
+      return <div className="mb-4 last:mb-0">{children}</div>
+    }
+  }
+  return <p {...rest}>{children}</p>
+}
+
+function MarkdownLink({
+  href,
+  children,
+  className,
+  ...rest
+}: ComponentPropsWithoutRef<"a">) {
+  const embed = parseVideoEmbedUrl(href ?? undefined)
+  if (embed?.kind === "youtube") {
+    return (
+      <span className="not-prose my-4 block w-full overflow-hidden rounded-md border border-border">
+        <span className="relative block aspect-video w-full">
+          <iframe
+            title="YouTube embed"
+            className="absolute inset-0 h-full w-full"
+            src={`https://www.youtube-nocookie.com/embed/${embed.id}`}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+          />
+        </span>
+      </span>
+    )
+  }
+  if (embed?.kind === "vimeo") {
+    return (
+      <span className="not-prose my-4 block w-full overflow-hidden rounded-md border border-border">
+        <span className="relative block aspect-video w-full">
+          <iframe
+            title="Vimeo embed"
+            className="absolute inset-0 h-full w-full"
+            src={`https://player.vimeo.com/video/${embed.id}`}
+            allow="autoplay; fullscreen; picture-in-picture"
+            allowFullScreen
+          />
+        </span>
+      </span>
+    )
+  }
+  return (
+    <a
+      href={href}
+      className={cn("text-primary underline underline-offset-2", className)}
+      {...rest}
+    >
+      {children}
+    </a>
+  )
+}
+
+type MarkdownBodyProps = {
+  markdown: string
+  className?: string
+}
+
+export function MarkdownBody({ markdown, className }: MarkdownBodyProps) {
+  return (
+    <div
+      className={cn(
+        "markdown-preview prose prose-neutral max-w-none dark:prose-invert prose-headings:scroll-mt-20 prose-pre:bg-transparent prose-pre:p-0",
+        className,
+      )}
+    >
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm, remarkMathConfigured]}
+        rehypePlugins={[rehypeKatex, rehypeHighlightConfigured, rehypeRaw]}
+        components={{
+          p: Paragraph,
+          a: MarkdownLink,
+          img: ({ alt, src, ...props }) => (
+            // eslint-disable-next-line @next/next/no-img-element -- arbitrary markdown image URLs
+            <img
+              src={typeof src === "string" ? src : undefined}
+              alt={typeof alt === "string" ? alt : ""}
+              className="my-4 max-h-96 w-full rounded-md border border-border object-cover"
+              {...props}
+            />
+          ),
+          code: ({ className, children, ...props }) => {
+            const inline = !className
+            return inline ? (
+              <code
+                className="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.85em] text-foreground"
+                {...props}
+              >
+                {children}
+              </code>
+            ) : (
+              <code className={className} {...props}>
+                {children as ReactNode}
+              </code>
+            )
+          },
+        }}
+      >
+        {markdown}
+      </ReactMarkdown>
+    </div>
+  )
+}

@@ -78,6 +78,10 @@ export function getDashboardSectionById(
 }
 
 export function getDashboardSectionByPath(pathname: string): DashboardSection {
+  if (pathname.startsWith("/photo/")) {
+    return getDashboardSectionById("screenshots")
+  }
+
   const exactMatch = dashboardSections.find(
     (section) => section.href === pathname
   )

@@ -82,25 +82,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar variant="floating" {...props}>
-      <SidebarHeader className="mb-3">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <Link href="/dashboard" className="flex items-center gap-2">
-                <Image
-                  src={userImage}
-                  alt="Folio"
-                  width={48}
-                  height={48}
-                  className="h-8 w-8 rounded-full object-cover"
-                />
-                <span className="text-xl">Folio</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarHeader>
-      <SidebarContent>
+      
+     
+      <SidebarContent className=" mt-16">
         <SidebarGroup>
           <SidebarMenu className="gap-2">
             {visibleSections.map((item) => {

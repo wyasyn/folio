@@ -1,13 +1,8 @@
 import Link from "next/link"
+import { ScreenshotGridImage } from "@/components/dashboard/admin/screenshot-grid-image"
+import { ScreenshotPhotoNavLink } from "@/components/dashboard/admin/screenshot-photo-nav-link"
 import { ScreenshotRowActions } from "@/components/dashboard/admin/screenshot-row-actions"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+import { ADMIN_SCREENSHOT_GALLERY_LIMIT } from "@/lib/admin-screenshot-gallery"
 import db from "@/lib/db"
 import { requireAdmin } from "@/lib/authz"
 import { getDashboardSectionById } from "@/lib/dashboard-navigation"
@@ -17,7 +12,7 @@ export default async function ScreenshotsPage() {
   const section = getDashboardSectionById("screenshots")
   const screenshots = await db.screenshot.findMany({
     orderBy: { updatedAt: "desc" },
-    take: 100,
+    take: ADMIN_SCREENSHOT_GALLERY_LIMIT,
     select: {
       id: true,
       url: true,
@@ -42,54 +37,73 @@ export default async function ScreenshotsPage() {
           Review and remove project gallery screenshots across all users.
         </p>
       </div>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Screenshot</TableHead>
-            <TableHead>Project</TableHead>
-            <TableHead>Owner</TableHead>
-            <TableHead>Updated</TableHead>
-            <TableHead className="w-20 text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {screenshots.map((screenshot) => (
-            <TableRow key={screenshot.id}>
-              <TableCell className="max-w-[320px] truncate">
-                <Link
-                  href={screenshot.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-sm text-primary underline-offset-4 hover:underline"
+
+      {screenshots.length === 0 ? (
+        <p className="text-sm text-muted-foreground">No screenshots yet.</p>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {screenshots.map((screenshot) => {
+            const ownerLabel =
+              screenshot.Project.user.name ?? screenshot.Project.user.email
+            const updatedLabel = screenshot.updatedAt.toLocaleDateString(
+              undefined,
+              {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              },
+            )
+
+            return (
+              <article
+                key={screenshot.id}
+                className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card text-card-foreground "
+              >
+                <ScreenshotPhotoNavLink
+                  href={`/photo/${screenshot.id}`}
+                  scroll={false}
+                  transitionTypes={["nav-forward"]}
+                  className="relative isolate block aspect-4/3 w-full shrink-0 cursor-zoom-in overflow-hidden bg-muted/40 outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  aria-label={`Open full-size screenshot for ${screenshot.Project.title}`}
                 >
-                  {screenshot.url}
-                </Link>
-              </TableCell>
-              <TableCell>
-                <Link
-                  href={`/dashboard/projects/${screenshot.Project.id}/edit`}
-                  className="font-medium underline-offset-4 hover:underline"
-                >
-                  {screenshot.Project.title}
-                </Link>
-              </TableCell>
-              <TableCell className="text-muted-foreground">
-                {screenshot.Project.user.name ?? screenshot.Project.user.email}
-              </TableCell>
-              <TableCell className="text-xs whitespace-nowrap text-muted-foreground">
-                {screenshot.updatedAt.toLocaleDateString(undefined, {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                })}
-              </TableCell>
-              <TableCell className="text-right">
-                <ScreenshotRowActions screenshotId={screenshot.id} />
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+                  <ScreenshotGridImage
+                    screenshotId={screenshot.id}
+                    src={screenshot.url}
+                    alt={`Screenshot for ${screenshot.Project.title}`}
+                  />
+                </ScreenshotPhotoNavLink>
+                <div className="flex flex-1 flex-col gap-3 p-3">
+                  <div className="min-h-0 flex-1 space-y-1">
+                    <Link
+                      href={`/dashboard/projects/${screenshot.Project.id}/edit`}
+                      className="line-clamp-2 font-medium leading-snug underline-offset-4 hover:underline"
+                    >
+                      {screenshot.Project.title}
+                    </Link>
+                    <p className="text-xs text-muted-foreground">
+                      <span className="font-medium text-foreground/80">
+                        Owner
+                      </span>
+                      {" · "}
+                      {ownerLabel}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      <span className="font-medium text-foreground/80">
+                        Updated
+                      </span>
+                      {" · "}
+                      {updatedLabel}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-end border-t border-border pt-2">
+                    <ScreenshotRowActions screenshotId={screenshot.id} />
+                  </div>
+                </div>
+              </article>
+            )
+          })}
+        </div>
+      )}
     </section>
   )
 }

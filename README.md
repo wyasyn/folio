@@ -8,14 +8,14 @@ Personal portfolio and admin dashboard built with **Next.js** (App Router), **Pr
 - [Prisma](https://www.prisma.io/) ORM · PostgreSQL ([`pg`](https://node-postgres.com/))
 - [Better Auth](https://www.better-auth.com/) (email/password + Google & GitHub OAuth)
 - [Cloudinary](https://cloudinary.com/) for image uploads
-- [shadcn/ui](https://ui.shadcn.com/) · [Tailwind CSS](https://tailwindcss.com/) v4
-- [TipTap](https://tiptap.dev/) for rich text in the project editor
+- [shadcn/ui](https://ui.shadcn.com/) · [Tailwind CSS](https://tailwindcss.com/) v4 · [@tailwindcss/typography](https://tailwindcss.com/docs/typography-plugin)
+- Split-pane Markdown editor ([CodeMirror 6](https://codemirror.net/), [react-markdown](https://github.com/remarkjs/react-markdown), KaTeX, GFM) for projects, posts, and news
 
 ## Features
 
 - Public portfolio route group and marketing-style layout
 - Sign up / sign in with OAuth providers
-- Dashboard: overview, projects (create with rich text and tech stack), blog placeholder, profile settings
+- Dashboard: overview, projects (create with Markdown content and tech stack), posts/news, profile settings
 - API routes for auth, projects, profile, and signed Cloudinary uploads
 
 ## Prerequisites
@@ -102,5 +102,3 @@ pnpm dlx shadcn@latest add button
 ```
 
 Import from `@/components/ui/...` as in the [shadcn docs](https://ui.shadcn.com/docs).
-
-

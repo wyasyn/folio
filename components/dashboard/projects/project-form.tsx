@@ -5,12 +5,17 @@ import { IconArrowRight, IconLoader, IconSparkles } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { RichTextEditor } from "@/components/dashboard/projects/rich-text-editor"
+import { MarkdownSplitEditor } from "@/components/dashboard/content/markdown-split-editor"
 import { TechStackMultiSelect } from "@/components/dashboard/projects/tech-stack-multi-select"
 import { ImageUploadDropzone } from "@/components/ui/image-upload-dropzone"
 import { MultiImageUploadDropzone } from "@/components/ui/multi-image-upload-dropzone"
 import { uploadImageToCloudinary } from "@/lib/cloudinary-upload"
 import { uploadPresets } from "@/lib/upload-presets"
+import {
+  collectMediaUrlsFromContent,
+  isMarkdownContentEmpty,
+  normalizeStoredContentToMarkdown,
+} from "@/lib/content-markdown"
 import { cn } from "@/lib/utils"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
@@ -53,23 +58,10 @@ const DEFAULT_TECH_STACKS = [
   "Cloudinary",
 ]
 
-const EMPTY_PARAGRAPH_PATTERN =
-  /^<(p|h[1-6]|blockquote)>(\s|&nbsp;|<br\s*\/?>)*<\/(p|h[1-6]|blockquote)>$/i
-
-const isRichTextEmpty = (value: string) => {
-  if (/<img\b/i.test(value)) return false
-
-  const stripped = value
-    .replace(/<[^>]+>/g, "")
-    .replace(/&nbsp;/g, " ")
-    .trim()
-  return stripped.length === 0 || EMPTY_PARAGRAPH_PATTERN.test(value.trim())
-}
-
 const defaultFormState = (): FormState => ({
   title: "",
   description: "",
-  content: "<p></p>",
+  content: "",
   coverImage: "",
   screenshots: [],
   liveUrl: "",
@@ -91,9 +83,14 @@ export function ProjectForm({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [successMessage, setSuccessMessage] = useState("")
   const [errors, setErrors] = useState<FormErrors>({})
-  const [form, setForm] = useState<FormState>(() =>
-    mode === "edit" && initial ? { ...initial } : defaultFormState(),
-  )
+  const [form, setForm] = useState<FormState>(() => {
+    const base =
+      mode === "edit" && initial ? { ...initial } : defaultFormState()
+    return {
+      ...base,
+      content: normalizeStoredContentToMarkdown(base.content),
+    }
+  })
 
   const availableTechStacks = useMemo(
     () => Array.from(new Set([...techStackOptions, ...DEFAULT_TECH_STACKS])).sort(),
@@ -106,7 +103,7 @@ export function ProjectForm({
     if (!form.title.trim()) nextErrors.title = "Title is required."
     if (!form.description.trim())
       nextErrors.description = "Description is required."
-    if (isRichTextEmpty(form.content))
+    if (isMarkdownContentEmpty(form.content))
       nextErrors.content = "Content is required."
     if (form.techStacks.length === 0)
       nextErrors.techStacks = "Select at least one tech stack."
@@ -135,15 +132,8 @@ export function ProjectForm({
     }
   }
 
-  const getImageUrlsFromHtml = (html: string) =>
-    new Set(
-      Array.from(html.matchAll(/<img[^>]+src=["']([^"']+)["']/g)).map(
-        (match) => match[1],
-      ),
-    )
-
   const handleEditorChange = (content: string) => {
-    const currentUrls = getImageUrlsFromHtml(content)
+    const currentUrls = collectMediaUrlsFromContent(content)
     for (const url of Array.from(pendingDeletedEditorImagesRef.current)) {
       if (currentUrls.has(url)) {
         pendingDeletedEditorImagesRef.current.delete(url)
@@ -272,20 +262,6 @@ export function ProjectForm({
           />
           {errors.description && (
             <span className="text-xs text-destructive">{errors.description}</span>
-          )}
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <Label>Content</Label>
-          <RichTextEditor
-            value={form.content}
-            onChange={handleEditorChange}
-            onUploadImage={uploadImageToCloudinary}
-            onImageRemoved={queueEditorImageDeletion}
-            error={errors.content}
-          />
-          {errors.content && (
-            <span className="text-xs text-destructive">{errors.content}</span>
           )}
         </div>
       </div>
@@ -443,6 +419,24 @@ export function ProjectForm({
             {successMessage}
           </p>
         )}
+      </div>
+
+      <div className="flex flex-col gap-6 xl:col-span-2">
+        <div className="flex flex-col gap-2">
+          <Label>Content</Label>
+          <MarkdownSplitEditor
+            value={form.content}
+            onChange={handleEditorChange}
+            onUploadImage={uploadImageToCloudinary}
+            cloudinaryFolder={uploadPresets.projectCover.folder}
+            onImageRemoved={queueEditorImageDeletion}
+            error={errors.content}
+            placeholder="Write your project story in Markdown…"
+          />
+          {errors.content && (
+            <span className="text-xs text-destructive">{errors.content}</span>
+          )}
+        </div>
       </div>
     </form>
   )

@@ -14,7 +14,6 @@
 import "dotenv/config"
 import { PrismaPg } from "@prisma/adapter-pg"
 import { Pool } from "pg"
-import { marked } from "marked"
 import { PrismaClient } from "../generated/prisma/client"
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL })
@@ -366,7 +365,7 @@ async function main() {
   })
 
   for (const p of projects) {
-    const content = marked(p.markdown.trim(), { async: false })
+    const content = p.markdown.trim()
 
     await db.project.create({
       data: {
@@ -395,7 +394,7 @@ async function main() {
   }
 
   for (const p of posts) {
-    const content = marked(p.markdown.trim(), { async: false })
+    const content = p.markdown.trim()
 
     await db.post.create({
       data: {
@@ -420,7 +419,7 @@ async function main() {
   }
 
   for (const n of newsItems) {
-    const content = marked(n.markdown.trim(), { async: false })
+    const content = n.markdown.trim()
 
     await db.news.create({
       data: {

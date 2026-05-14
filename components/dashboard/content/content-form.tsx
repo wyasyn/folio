@@ -8,10 +8,15 @@ import { ImageUploadDropzone } from "@/components/ui/image-upload-dropzone"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { RichTextEditor } from "@/components/dashboard/projects/rich-text-editor"
+import { MarkdownSplitEditor } from "@/components/dashboard/content/markdown-split-editor"
 import { TechStackMultiSelect } from "@/components/dashboard/projects/tech-stack-multi-select"
 import { uploadImageToCloudinary } from "@/lib/cloudinary-upload"
 import { uploadPresets } from "@/lib/upload-presets"
+import {
+  collectMediaUrlsFromContent,
+  isMarkdownContentEmpty,
+  normalizeStoredContentToMarkdown,
+} from "@/lib/content-markdown"
 import { cn } from "@/lib/utils"
 
 export type ContentKind = "posts" | "news"
@@ -50,23 +55,11 @@ const DEFAULT_TAGS = [
   "Case Study",
 ]
 
-const EMPTY_PARAGRAPH_PATTERN =
-  /^<(p|h[1-6]|blockquote)>(\s|&nbsp;|<br\s*\/?>)*<\/(p|h[1-6]|blockquote)>$/i
-
-function isRichTextEmpty(value: string) {
-  if (/<img\b/i.test(value)) return false
-  const stripped = value
-    .replace(/<[^>]+>/g, "")
-    .replace(/&nbsp;/g, " ")
-    .trim()
-  return stripped.length === 0 || EMPTY_PARAGRAPH_PATTERN.test(value.trim())
-}
-
 function defaultFormState(): ContentFormInitial {
   return {
     title: "",
     description: "",
-    content: "<p></p>",
+    content: "",
     coverImage: "",
     readTime: 0,
     published: true,
@@ -92,9 +85,14 @@ export function ContentForm({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [successMessage, setSuccessMessage] = useState("")
   const [errors, setErrors] = useState<FormErrors>({})
-  const [form, setForm] = useState<ContentFormInitial>(() =>
-    mode === "edit" && initial ? { ...initial } : defaultFormState()
-  )
+  const [form, setForm] = useState<ContentFormInitial>(() => {
+    const base =
+      mode === "edit" && initial ? { ...initial } : defaultFormState()
+    return {
+      ...base,
+      content: normalizeStoredContentToMarkdown(base.content),
+    }
+  })
 
   const availableTags = useMemo(
     () => Array.from(new Set([...tagOptions, ...DEFAULT_TAGS])).sort(),
@@ -104,7 +102,7 @@ export function ContentForm({
   const validate = () => {
     const nextErrors: FormErrors = {}
     if (!form.title.trim()) nextErrors.title = "Title is required."
-    if (isRichTextEmpty(form.content))
+    if (isMarkdownContentEmpty(form.content))
       nextErrors.content = "Content is required."
     if (form.tags.length === 0) nextErrors.tags = "Select at least one tag."
     if (
@@ -135,15 +133,8 @@ export function ContentForm({
     }
   }
 
-  const getImageUrlsFromHtml = (html: string) =>
-    new Set(
-      Array.from(html.matchAll(/<img[^>]+src=["']([^"']+)["']/g)).map(
-        (match) => match[1]
-      )
-    )
-
   const handleEditorChange = (content: string) => {
-    const currentUrls = getImageUrlsFromHtml(content)
+    const currentUrls = collectMediaUrlsFromContent(content)
     for (const url of Array.from(pendingDeletedEditorImagesRef.current)) {
       if (currentUrls.has(url))
         pendingDeletedEditorImagesRef.current.delete(url)
@@ -217,6 +208,9 @@ export function ContentForm({
     mode === "create" ? `Create ${labelFor(kind)}` : "Save changes"
   const SubmitIcon = mode === "create" ? IconArrowRight : IconSparkles
 
+  const inlineImageFolder =
+    kind === "posts" ? uploadPresets.postCover.folder : uploadPresets.newsCover.folder
+
   return (
     <form
       onSubmit={handleSubmit}
@@ -266,22 +260,6 @@ export function ContentForm({
             placeholder="Optional short summary for listings and previews."
             className="min-h-28 resize-y"
           />
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <Label>Content</Label>
-          <RichTextEditor
-            value={form.content}
-            onChange={handleEditorChange}
-            onUploadImage={uploadImageToCloudinary}
-            onImageRemoved={(url) =>
-              pendingDeletedEditorImagesRef.current.add(url)
-            }
-            error={errors.content}
-          />
-          {errors.content && (
-            <span className="text-xs text-destructive">{errors.content}</span>
-          )}
         </div>
       </div>
 
@@ -385,6 +363,30 @@ export function ContentForm({
             {successMessage}
           </p>
         )}
+      </div>
+
+      <div className="flex flex-col gap-6 xl:col-span-2">
+        <div className="flex flex-col gap-2">
+          <Label>Content</Label>
+          <MarkdownSplitEditor
+            value={form.content}
+            onChange={handleEditorChange}
+            onUploadImage={uploadImageToCloudinary}
+            cloudinaryFolder={inlineImageFolder}
+            onImageRemoved={(url) =>
+              pendingDeletedEditorImagesRef.current.add(url)
+            }
+            error={errors.content}
+            placeholder={
+              kind === "posts"
+                ? "Write your post in Markdown…"
+                : "Write your announcement in Markdown…"
+            }
+          />
+          {errors.content && (
+            <span className="text-xs text-destructive">{errors.content}</span>
+          )}
+        </div>
       </div>
     </form>
   )
