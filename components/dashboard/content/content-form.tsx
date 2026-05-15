@@ -8,6 +8,7 @@ import { ImageUploadDropzone } from "@/components/ui/image-upload-dropzone"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { AiAssistButton } from "@/components/dashboard/ai/ai-assist-button"
 import { MarkdownSplitEditor } from "@/components/dashboard/content/markdown-split-editor"
 import { TechStackMultiSelect } from "@/components/dashboard/projects/tech-stack-multi-select"
 import { uploadImageToCloudinary } from "@/lib/cloudinary-upload"
@@ -17,6 +18,7 @@ import {
   isMarkdownContentEmpty,
   normalizeStoredContentToMarkdown,
 } from "@/lib/content-markdown"
+import { mergeCatalogOptions } from "@/lib/catalog-names"
 import { cn } from "@/lib/utils"
 
 export type ContentKind = "posts" | "news"
@@ -44,16 +46,6 @@ type ContentFormProps = {
 type FormErrors = Partial<Record<keyof ContentFormInitial, string>> & {
   global?: string
 }
-
-const DEFAULT_TAGS = [
-  "Engineering",
-  "Product",
-  "Design",
-  "AI",
-  "Web",
-  "Launch",
-  "Case Study",
-]
 
 function defaultFormState(): ContentFormInitial {
   return {
@@ -95,8 +87,8 @@ export function ContentForm({
   })
 
   const availableTags = useMemo(
-    () => Array.from(new Set([...tagOptions, ...DEFAULT_TAGS])).sort(),
-    [tagOptions]
+    () => mergeCatalogOptions(tagOptions, form.tags),
+    [tagOptions, form.tags]
   )
 
   const validate = () => {
@@ -216,7 +208,20 @@ export function ContentForm({
       onSubmit={handleSubmit}
       className="mt-4 grid gap-6 xl:grid-cols-[1.35fr_0.65fr]"
     >
-      <div className="flex justify-end xl:col-span-2">
+      <div className="flex flex-wrap items-center justify-end gap-2 xl:col-span-2">
+        <AiAssistButton
+          context={kind === "posts" ? "post" : "news"}
+          mode={mode}
+          getDraft={() => ({
+            title: form.title,
+            description: form.description,
+            content: form.content,
+            tags: form.tags,
+            published: form.published,
+            featured: form.featured,
+          })}
+          disabled={!userId}
+        />
         <Button type="submit" disabled={isSubmitting || !userId}>
           {isSubmitting && (
             <IconLoader data-icon="inline-start" className="animate-spin" />
@@ -271,6 +276,7 @@ export function ContentForm({
             value={form.tags}
             onChange={(tags) => setForm((current) => ({ ...current, tags }))}
             error={errors.tags}
+            itemName="tag"
           />
           {errors.tags && (
             <span className="text-xs text-destructive">{errors.tags}</span>

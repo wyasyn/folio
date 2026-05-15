@@ -12,7 +12,7 @@ export default async function NewNewsPage() {
   return (
     <section className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
-        <h1 className="text-2xl text-foreground">Create News</h1>
+        <h1 className="text-2xl lg:text-4xl font-semibold text-foreground">Create News</h1>
         <p className="text-sm text-muted-foreground">
           Publish a short update, launch note, or announcement.
         </p>

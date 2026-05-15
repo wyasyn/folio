@@ -1,7 +1,9 @@
 import { Prisma } from "@/generated/prisma/client"
+import { syncTagNamesInTransaction } from "@/lib/catalog-db"
 import { parseContentPayload, type ContentPayload } from "@/lib/content-payload"
 import db from "@/lib/db"
 import { getRequestSession, isAdmin, unauthorizedResponse } from "@/lib/authz"
+import { revalidateNews } from "@/lib/revalidate-content"
 
 async function requireNewsAccess(request: Request, newsId: number) {
   const session = await getRequestSession(request)
@@ -12,14 +14,14 @@ async function requireNewsAccess(request: Request, newsId: number) {
       id: newsId,
       ...(isAdmin(session.user) ? {} : { authorId: session.user.id }),
     },
-    select: { id: true },
+    select: { id: true, slug: true },
   })
 
   if (!news) {
     return { error: Response.json({ error: "Not found." }, { status: 404 }) }
   }
 
-  return { session }
+  return { session, news }
 }
 
 export async function PATCH(
@@ -34,6 +36,7 @@ export async function PATCH(
 
   const access = await requireNewsAccess(request, newsId)
   if ("error" in access) return access.error
+  const previousSlug = access.news.slug
 
   let payload: ContentPayload
   try {
@@ -47,23 +50,7 @@ export async function PATCH(
 
   try {
     const news = await db.$transaction(async (tx) => {
-      const existingTags = await tx.tag.findMany({
-        where: { name: { in: parsed.data.tags } },
-        select: { id: true, name: true },
-      })
-      const existingByName = new Map(
-        existingTags.map((tag) => [tag.name, tag.id])
-      )
-      for (const name of parsed.data.tags.filter(
-        (name) => !existingByName.has(name)
-      )) {
-        await tx.tag.create({ data: { name, updatedAt: new Date() } })
-      }
-      const tags = await tx.tag.findMany({
-        where: { name: { in: parsed.data.tags } },
-        select: { id: true, name: true },
-      })
-      const idByName = new Map(tags.map((tag) => [tag.name, tag.id]))
+      const tagIds = await syncTagNamesInTransaction(tx, parsed.data.tags)
 
       return tx.news.update({
         where: { id: newsId },
@@ -77,14 +64,13 @@ export async function PATCH(
           published: parsed.data.published,
           featured: parsed.data.featured,
           updatedAt: new Date(),
-          tags: {
-            set: parsed.data.tags.map((name) => ({ id: idByName.get(name)! })),
-          },
+          tags: { set: tagIds },
         },
         include: { tags: true },
       })
     })
 
+    revalidateNews(news.slug, previousSlug)
     return Response.json({ data: news })
   } catch (error) {
     if (
@@ -119,6 +105,7 @@ export async function DELETE(
 
   try {
     await db.news.delete({ where: { id: newsId } })
+    revalidateNews(access.news.slug)
     return new Response(null, { status: 204 })
   } catch (error) {
     if (

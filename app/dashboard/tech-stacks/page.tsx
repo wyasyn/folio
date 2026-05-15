@@ -18,7 +18,7 @@ export default async function TechStacksPage() {
   return (
     <section className="flex flex-col gap-4">
       <div>
-        <h1 className="text-2xl font-semibold text-foreground">
+        <h1 className="text-2xl lg:text-4xl font-semibold text-foreground">
           {section.label}
         </h1>
         <p className="text-sm text-muted-foreground">
@@ -27,9 +27,10 @@ export default async function TechStacksPage() {
         </p>
       </div>
       <CatalogManager
-        title="Tech Stacks"
+        title="Tech stacks"
+        itemName="tech stack"
         endpoint="/api/admin/tech-stacks"
-        countLabel="Projects"
+        countLabel="projects"
         items={techStacks.map((techStack) => ({
           id: techStack.id,
           name: techStack.name,

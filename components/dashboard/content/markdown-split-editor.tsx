@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import CodeMirror, { type ReactCodeMirrorRef } from "@uiw/react-codemirror"
 import { markdown } from "@codemirror/lang-markdown"
-import { indentUnit } from "@codemirror/language"
+import { indentUnit, LanguageDescription } from "@codemirror/language"
+import { languages } from "@codemirror/language-data"
 import {
   defaultKeymap,
   history,
@@ -48,6 +49,13 @@ export type MarkdownSplitEditorProps = {
   placeholder?: string
 }
 
+function resolveCodeLanguage(info: string) {
+  const id = info.trim()
+  if (!id) return null
+  const normalized = id.toLowerCase() === "shell" ? "bash" : id
+  return LanguageDescription.matchLanguageName(languages, normalized)
+}
+
 function insertAtCursor(view: EditorView, text: string) {
   const { from, to } = view.state.selection.main
   view.dispatch({
@@ -75,7 +83,7 @@ export function MarkdownSplitEditor({
 
   const extensions = useMemo(
     () => [
-      markdown(),
+      markdown({ codeLanguages: resolveCodeLanguage }),
       lineNumbers(),
       history(),
       indentUnit.of("  "),
@@ -98,7 +106,6 @@ export function MarkdownSplitEditor({
             backgroundColor: "transparent",
           },
         },
-        { dark: false },
       ),
     ],
     [],
@@ -317,8 +324,10 @@ export function MarkdownSplitEditor({
         </TabsContent>
         <TabsContent value="code" className="space-y-2">
           <p className="text-muted-foreground">
-            Insert a fenced code block with language hint for syntax highlighting
-            in preview.
+            Insert a fenced code block with a language tag (e.g.{" "}
+            <code className="text-foreground">typescript</code>). Syntax highlighting
+            applies in the editor and preview; inline{" "}
+            <code className="text-foreground">`code`</code> is not highlighted.
           </p>
           <Button
             type="button"

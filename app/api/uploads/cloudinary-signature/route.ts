@@ -1,8 +1,13 @@
 import { createHash } from "node:crypto"
+import { CLOUDINARY_UPLOAD_EAGER } from "@/lib/cloudinary"
+import { getRequestSession, unauthorizedResponse } from "@/lib/authz"
 
 const ALLOWED_FOLDERS = new Set(["projects", "avatars", "posts", "news"])
 
 export async function POST(request: Request) {
+  const session = await getRequestSession(request)
+  if (!session) return unauthorizedResponse()
+
   const cloudName = process.env.CLOUDINARY_CLOUD_NAME
   const apiKey = process.env.CLOUDINARY_API_KEY
   const apiSecret = process.env.CLOUDINARY_API_SECRET
@@ -21,7 +26,8 @@ export async function POST(request: Request) {
     body?.folder && ALLOWED_FOLDERS.has(body.folder) ? body.folder : "projects"
 
   const timestamp = Math.floor(Date.now() / 1000)
-  const payload = `folder=${folder}&timestamp=${timestamp}${apiSecret}`
+  const eager = CLOUDINARY_UPLOAD_EAGER
+  const payload = `eager=${eager}&folder=${folder}&timestamp=${timestamp}${apiSecret}`
   const signature = createHash("sha1").update(payload).digest("hex")
 
   return Response.json({
@@ -30,6 +36,7 @@ export async function POST(request: Request) {
       apiKey,
       timestamp,
       folder,
+      eager,
       signature,
     },
   })

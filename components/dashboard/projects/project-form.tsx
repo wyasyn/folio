@@ -5,6 +5,7 @@ import { IconArrowRight, IconLoader, IconSparkles } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { AiAssistButton } from "@/components/dashboard/ai/ai-assist-button"
 import { MarkdownSplitEditor } from "@/components/dashboard/content/markdown-split-editor"
 import { TechStackMultiSelect } from "@/components/dashboard/projects/tech-stack-multi-select"
 import { ImageUploadDropzone } from "@/components/ui/image-upload-dropzone"
@@ -16,6 +17,7 @@ import {
   isMarkdownContentEmpty,
   normalizeStoredContentToMarkdown,
 } from "@/lib/content-markdown"
+import { mergeCatalogOptions } from "@/lib/catalog-names"
 import { cn } from "@/lib/utils"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
@@ -46,17 +48,6 @@ type FormState = ProjectFormInitial
 type FormErrors = Partial<Record<keyof FormState, string>> & {
   global?: string
 }
-
-const DEFAULT_TECH_STACKS = [
-  "Next.js",
-  "TypeScript",
-  "React",
-  "Tailwind CSS",
-  "Prisma",
-  "PostgreSQL",
-  "Node.js",
-  "Cloudinary",
-]
 
 const defaultFormState = (): FormState => ({
   title: "",
@@ -93,8 +84,8 @@ export function ProjectForm({
   })
 
   const availableTechStacks = useMemo(
-    () => Array.from(new Set([...techStackOptions, ...DEFAULT_TECH_STACKS])).sort(),
-    [techStackOptions],
+    () => mergeCatalogOptions(techStackOptions, form.techStacks),
+    [techStackOptions, form.techStacks]
   )
 
   const validate = () => {
@@ -217,7 +208,20 @@ export function ProjectForm({
 
   return (
     <form onSubmit={handleSubmit} className="mt-4 grid gap-6 xl:grid-cols-[1.35fr_0.65fr]">
-      <div className="xl:col-span-2 flex justify-end">
+      <div className="flex flex-wrap items-center justify-end gap-2 xl:col-span-2">
+        <AiAssistButton
+          context="project"
+          mode={mode}
+          getDraft={() => ({
+            title: form.title,
+            description: form.description,
+            content: form.content,
+            techStacks: form.techStacks,
+            published: form.published,
+            featured: form.featured,
+          })}
+          disabled={!userId}
+        />
         <Button
           type="submit"
           size="default"

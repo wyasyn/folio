@@ -21,7 +21,7 @@ export default async function ProjectsPage({ searchParams }: ProjectsPageProps) 
   return (
     <section className="flex flex-col gap-4">
       <div>
-        <h1 className="text-2xl font-semibold text-foreground">
+        <h1 className="text-2xl lg:text-4xl font-semibold text-foreground">
           {projectsSection.label}
         </h1>
         <p className="text-sm text-muted-foreground">

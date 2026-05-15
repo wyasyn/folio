@@ -6,7 +6,6 @@ import { redirect } from "next/navigation"
 import { ProfileSettingsForm } from "@/components/dashboard/settings/profile-settings-form"
 
 export default async function SettingsPage() {
- 
   const session = await auth.api.getSession({
     headers: await headers(),
   })
@@ -43,7 +42,6 @@ export default async function SettingsPage() {
 
   return (
     <section className="">
-     
       <ProfileSettingsForm
         initialProfile={{
           name: user.name ?? "",

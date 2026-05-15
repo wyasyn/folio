@@ -12,7 +12,7 @@ export default async function NewPostPage() {
   return (
     <section className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
-        <h1 className="text-2xl text-foreground">Create Post</h1>
+        <h1 className="text-2xl lg:text-4xl font-semibold text-foreground">Create Post</h1>
         <p className="text-sm text-muted-foreground">
           Add a long-form article with rich content, tags, and a cover image.
         </p>

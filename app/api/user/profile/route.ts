@@ -1,5 +1,6 @@
 import db from "@/lib/db"
 import { auth } from "@/lib/auth"
+import { revalidateSiteProfile } from "@/lib/revalidate-content"
 
 type UpdateProfilePayload = {
   name?: unknown
@@ -130,6 +131,8 @@ export async function PATCH(request: Request) {
         openToWork: true,
       },
     })
+
+    revalidateSiteProfile()
 
     return Response.json({ data: user }, { status: 200 })
   } catch {

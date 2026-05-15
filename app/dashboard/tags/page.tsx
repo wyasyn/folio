@@ -18,7 +18,7 @@ export default async function TagsPage() {
   return (
     <section className="flex flex-col gap-4">
       <div>
-        <h1 className="text-2xl font-semibold text-foreground">
+        <h1 className="text-2xl lg:text-4xl font-semibold text-foreground">
           {section.label}
         </h1>
         <p className="text-sm text-muted-foreground">
@@ -28,8 +28,9 @@ export default async function TagsPage() {
       </div>
       <CatalogManager
         title="Tags"
+        itemName="tag"
         endpoint="/api/admin/tags"
-        countLabel="Content"
+        countLabel="uses"
         items={tags.map((tag) => ({
           id: tag.id,
           name: tag.name,

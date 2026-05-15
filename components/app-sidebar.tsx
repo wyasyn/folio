@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation"
 import * as React from "react"
 import {
   IconArticle,
+  IconBrain,
   IconCamera,
   IconDotsVertical,
   IconFolder,
@@ -34,13 +35,14 @@ import {
   getDashboardSectionByPath,
   type DashboardSectionId,
 } from "@/lib/dashboard-navigation"
-import Image from "next/image"
+import { CloudinaryImage } from "@/components/ui/cloudinary-image"
 
 const sectionIcons: Record<DashboardSectionId, TablerIcon> = {
   overview: IconLayoutDashboard,
   projects: IconFolder,
   posts: IconArticle,
   news: IconNews,
+  ai: IconBrain,
   tags: IconTags,
   "tech-stacks": IconHexagon,
   screenshots: IconCamera,
@@ -70,9 +72,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const userName = session?.user?.name?.trim() || "User"
   const userEmail = session?.user?.email || "user@example.com"
   const avatarText = userName.slice(0, 1).toUpperCase()
-  const userImage =
-    session?.user?.image ||
-    "https://res.cloudinary.com/dkdteb9m5/image/upload/v1773650944/Frame_1_ucq2oa.png"
   const isAdmin =
     typeof session?.user?.role === "string" &&
     session.user.role.split(",").includes("admin")
@@ -122,10 +121,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               >
                 <div className="flex size-8 items-center justify-center overflow-hidden rounded-full border bg-sidebar-accent text-xs font-semibold">
                   {session?.user?.image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    <CloudinaryImage
                       src={session.user.image}
                       alt={userName}
+                      preset="avatar"
+                      width={32}
+                      height={32}
                       className="size-full object-cover"
                     />
                   ) : (

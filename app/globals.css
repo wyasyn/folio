@@ -2,6 +2,8 @@
 @plugin "@tailwindcss/typography";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "highlight.js/styles/github.min.css" layer(components);
+@import "./markdown-hljs-dark.css" layer(components);
 
 @custom-variant dark (&:is(.dark *));
 
@@ -141,47 +143,22 @@
 }
 
 @layer components {
-  /* rehype-highlight puts hljs-* token classes on spans inside pre > code, not on code */
+  /* Typography prose adds decorative ` backticks on code::before/after; inline code is not in pre */
+  .markdown-preview :not(pre) > code::before,
+  .markdown-preview :not(pre) > code::after {
+    content: none;
+  }
+
+  /* Let hljs token spans keep theme colors; prose pre/code { color: inherit } is bypassed via not-prose on pre */
   .markdown-preview pre code.hljs {
-    color: var(--foreground);
+    display: block;
+    padding: 0;
+    overflow-x: visible;
+    background: transparent;
   }
 
-  .markdown-preview pre code .hljs-comment,
-  .markdown-preview pre code .hljs-quote {
-    color: color-mix(in oklch, var(--muted-foreground) 85%, var(--foreground));
-  }
-
-  .markdown-preview pre code .hljs-keyword,
-  .markdown-preview pre code .hljs-selector-tag,
-  .markdown-preview pre code .hljs-literal,
-  .markdown-preview pre code .hljs-section,
-  .markdown-preview pre code .hljs-link {
-    color: oklch(0.66 0.16 260);
-  }
-
-  .markdown-preview pre code .hljs-string,
-  .markdown-preview pre code .hljs-title,
-  .markdown-preview pre code .hljs-name,
-  .markdown-preview pre code .hljs-type,
-  .markdown-preview pre code .hljs-attribute,
-  .markdown-preview pre code .hljs-symbol,
-  .markdown-preview pre code .hljs-bullet,
-  .markdown-preview pre code .hljs-addition,
-  .markdown-preview pre code .hljs-template-tag,
-  .markdown-preview pre code .hljs-template-variable {
-    color: oklch(0.73 0.15 145);
-  }
-
-  .markdown-preview pre code .hljs-number,
-  .markdown-preview pre code .hljs-regexp,
-  .markdown-preview pre code .hljs-meta,
-  .markdown-preview pre code .hljs-doctag,
-  .markdown-preview pre code .hljs-built_in {
-    color: oklch(0.73 0.14 70);
-  }
-
-  .markdown-preview pre {
-    @apply overflow-x-auto rounded-md border border-border bg-muted/60 p-3 text-sm;
+  .markdown-preview .hljs {
+    background: transparent;
   }
 
   .markdown-preview .katex-display {
@@ -235,6 +212,40 @@
   animation:
     var(--photo-vt-enter) ease-out var(--photo-vt-exit) both photo-vt-fade,
     var(--photo-vt-enter) ease-in-out var(--photo-vt-exit) both photo-vt-slide;
+}
+
+@keyframes page-vt-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes page-vt-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+::view-transition-old(page-forward) {
+  animation: 180ms ease-in both page-vt-fade-out;
+}
+
+::view-transition-new(page-forward) {
+  animation: 260ms ease-out 80ms both page-vt-fade-in;
+}
+
+::view-transition-old(page-back) {
+  animation: 160ms ease-in both page-vt-fade-out;
+}
+
+::view-transition-new(page-back) {
+  animation: 240ms ease-out 60ms both page-vt-fade-in;
 }
 
 @media (prefers-reduced-motion: reduce) {

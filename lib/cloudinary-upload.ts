@@ -5,6 +5,7 @@ type CloudinarySignatureResponse = {
     timestamp: number
     signature: string
     folder: string
+    eager: string
   }
 }
 
@@ -41,6 +42,7 @@ export const uploadImageToCloudinary = async (
   uploadBody.append("timestamp", `${signatureData.data.timestamp}`)
   uploadBody.append("signature", signatureData.data.signature)
   uploadBody.append("folder", signatureData.data.folder)
+  uploadBody.append("eager", signatureData.data.eager)
 
   const uploadResponse = await fetch(
     `https://api.cloudinary.com/v1_1/${signatureData.data.cloudName}/image/upload`,
@@ -56,7 +58,11 @@ export const uploadImageToCloudinary = async (
 
   const uploadResult = (await uploadResponse.json()) as {
     secure_url?: string
+    eager?: Array<{ secure_url?: string }>
   }
+
+  const eagerUrl = uploadResult.eager?.[0]?.secure_url
+  if (eagerUrl) return eagerUrl
 
   if (!uploadResult.secure_url) {
     throw new Error("Cloudinary did not return image URL.")

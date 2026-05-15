@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog"
 import { ScreenshotPhotoNavLink } from "@/components/dashboard/admin/screenshot-photo-nav-link"
 import { Button } from "@/components/ui/button"
+import { CloudinaryImage } from "@/components/ui/cloudinary-image"
 import type { ScreenshotPhotoViewerPayload } from "@/lib/admin-screenshot-photo-payload"
 import {
   navigatePhotoWithViewTransition,
@@ -128,13 +129,15 @@ function PhotoChrome({
                 <span className="sr-only">Image unavailable</span>
               </div>
             ) : (
-              // eslint-disable-next-line @next/next/no-img-element -- admin URLs may be any host
-              <img
+              <CloudinaryImage
                 key={data.id}
                 src={data.url}
                 alt={`Screenshot for ${data.project.title}`}
+                preset="screenshot"
+                width={1200}
+                height={800}
+                sizes="(max-width: 1024px) 100vw, 80vw"
                 className="max-h-[min(78vh,860px)] w-full object-contain"
-                decoding="async"
                 style={{ viewTransitionName: `admin-screenshot-${data.id}` }}
                 onError={() => setFailed(true)}
               />

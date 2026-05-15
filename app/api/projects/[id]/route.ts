@@ -1,6 +1,8 @@
 import { Prisma } from "@/generated/prisma/client"
+import { syncTechStackNamesInTransaction } from "@/lib/catalog-db"
 import db from "@/lib/db"
 import { getRequestSession, isAdmin, unauthorizedResponse } from "@/lib/authz"
+import { revalidateProject } from "@/lib/revalidate-content"
 import {
   asOptionalString,
   asRequiredString,
@@ -34,14 +36,14 @@ async function requireProjectOwner(request: Request, projectId: number) {
       id: projectId,
       ...(isAdmin(session.user) ? {} : { userId: session.user.id }),
     },
-    select: { id: true },
+    select: { id: true, slug: true },
   })
 
   if (!project) {
     return { error: Response.json({ error: "Not found." }, { status: 404 }) }
   }
 
-  return { session }
+  return { session, project }
 }
 
 export async function PATCH(
@@ -56,6 +58,7 @@ export async function PATCH(
 
   const authResult = await requireProjectOwner(request, projectId)
   if ("error" in authResult) return authResult.error
+  const previousSlug = authResult.project.slug
 
   let payload: UpdateProjectPayload
   try {
@@ -132,32 +135,11 @@ export async function PATCH(
   const parsedScreenshotUrls = screenshotsResult.urls
 
   try {
-    const existingTechStacks = await db.techStack.findMany({
-      where: { name: { in: parsedTechStacks } },
-      select: { id: true, name: true },
-    })
-
-    const existingByName = new Map(
-      existingTechStacks.map((techStack) => [techStack.name, techStack.id])
-    )
-
-    const createNames = parsedTechStacks.filter(
-      (name) => !existingByName.has(name)
-    )
-
     const project = await db.$transaction(async (tx) => {
-      for (const name of createNames) {
-        await tx.techStack.create({
-          data: { name, updatedAt: new Date() },
-        })
-      }
-
-      const allStacks = await tx.techStack.findMany({
-        where: { name: { in: parsedTechStacks } },
-        select: { id: true, name: true },
-      })
-      const idByName = new Map(allStacks.map((t) => [t.name, t.id]))
-      const orderedIds = parsedTechStacks.map((name) => idByName.get(name)!)
+      const stackIds = await syncTechStackNamesInTransaction(
+        tx,
+        parsedTechStacks
+      )
 
       return tx.project.update({
         where: { id: projectId },
@@ -173,7 +155,7 @@ export async function PATCH(
           featured,
           updatedAt: new Date(),
           TechStack: {
-            set: orderedIds.map((stackId) => ({ id: stackId })),
+            set: stackIds.map((id) => ({ id })),
           },
           screenshots: {
             deleteMany: {},
@@ -187,6 +169,7 @@ export async function PATCH(
       })
     })
 
+    revalidateProject(project.slug, previousSlug)
     return Response.json({ data: project })
   } catch (error) {
     if (
@@ -223,6 +206,7 @@ export async function DELETE(
     await db.project.delete({
       where: { id: projectId },
     })
+    revalidateProject(authResult.project.slug)
     return new Response(null, { status: 204 })
   } catch (error) {
     if (

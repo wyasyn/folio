@@ -168,3 +168,29 @@ model verification {
 
   @@index([identifier])
 }
+
+model SiteAiSettings {
+  id          String   @id @default("default")
+  chatModel   String   @default("openai/gpt-4o-mini")
+  chatEnabled Boolean  @default(false)
+  updatedAt   DateTime @updatedAt
+}
+
+model OpenRouterModel {
+  id        String   @id @default(cuid())
+  modelId   String   @unique
+  label     String?
+  createdAt DateTime @default(now())
+}
+
+model ChatUsageLog {
+  id               String   @id @default(cuid())
+  model            String
+  promptTokens     Int      @default(0)
+  completionTokens Int      @default(0)
+  totalTokens      Int      @default(0)
+  createdAt        DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([model])
+}

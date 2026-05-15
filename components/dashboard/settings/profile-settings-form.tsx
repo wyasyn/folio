@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import { AiAssistButton } from "@/components/dashboard/ai/ai-assist-button"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { IconCheck, IconLoader2 } from "@tabler/icons-react"
@@ -146,12 +147,25 @@ export function ProfileSettingsForm({ initialProfile }: ProfileSettingsFormProps
 
   return (
     <div className="w-full max-w-5xl rounded-xl border bg-card">
-      <div className="border-b px-6 py-5">
-        <h1 className="text-2xl font-semibold text-foreground">Edit your profile</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Complete your profile the first time, then update it any time from
-          settings.
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-4 border-b px-6 py-5">
+        <div>
+          <h1 className="text-2xl font-semibold text-foreground">Edit your profile</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Complete your profile the first time, then update it any time from
+            settings.
+          </p>
+        </div>
+        <AiAssistButton
+          context="profile"
+          mode={isEditMode ? "edit" : "create"}
+          getDraft={() => ({
+            title: name,
+            jobTitle,
+            tagline,
+            bio,
+            description: bio,
+          })}
+        />
       </div>
 
       <div className="grid gap-0 border-b md:grid-cols-[2fr_1fr]">

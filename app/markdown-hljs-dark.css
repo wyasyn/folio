@@ -1,0 +1,92 @@
+/* GitHub Dark theme, scoped to markdown preview in dark mode */
+.dark .markdown-preview .hljs {
+  color: #c9d1d9;
+  background: transparent;
+}
+
+.dark .markdown-preview .hljs-doctag,
+.dark .markdown-preview .hljs-keyword,
+.dark .markdown-preview .hljs-meta .hljs-keyword,
+.dark .markdown-preview .hljs-template-tag,
+.dark .markdown-preview .hljs-template-variable,
+.dark .markdown-preview .hljs-type,
+.dark .markdown-preview .hljs-variable.language_ {
+  color: #ff7b72;
+}
+
+.dark .markdown-preview .hljs-title,
+.dark .markdown-preview .hljs-title.class_,
+.dark .markdown-preview .hljs-title.class_.inherited__,
+.dark .markdown-preview .hljs-title.function_ {
+  color: #d2a8ff;
+}
+
+.dark .markdown-preview .hljs-attr,
+.dark .markdown-preview .hljs-attribute,
+.dark .markdown-preview .hljs-literal,
+.dark .markdown-preview .hljs-meta,
+.dark .markdown-preview .hljs-number,
+.dark .markdown-preview .hljs-operator,
+.dark .markdown-preview .hljs-variable,
+.dark .markdown-preview .hljs-selector-attr,
+.dark .markdown-preview .hljs-selector-class,
+.dark .markdown-preview .hljs-selector-id {
+  color: #79c0ff;
+}
+
+.dark .markdown-preview .hljs-regexp,
+.dark .markdown-preview .hljs-string,
+.dark .markdown-preview .hljs-meta .hljs-string {
+  color: #a5d6ff;
+}
+
+.dark .markdown-preview .hljs-built_in,
+.dark .markdown-preview .hljs-symbol {
+  color: #ffa657;
+}
+
+.dark .markdown-preview .hljs-comment,
+.dark .markdown-preview .hljs-code,
+.dark .markdown-preview .hljs-formula {
+  color: #8b949e;
+}
+
+.dark .markdown-preview .hljs-name,
+.dark .markdown-preview .hljs-quote,
+.dark .markdown-preview .hljs-selector-tag,
+.dark .markdown-preview .hljs-selector-pseudo {
+  color: #7ee787;
+}
+
+.dark .markdown-preview .hljs-subst {
+  color: #c9d1d9;
+}
+
+.dark .markdown-preview .hljs-section {
+  color: #1f6feb;
+  font-weight: bold;
+}
+
+.dark .markdown-preview .hljs-bullet {
+  color: #f2cc60;
+}
+
+.dark .markdown-preview .hljs-emphasis {
+  color: #c9d1d9;
+  font-style: italic;
+}
+
+.dark .markdown-preview .hljs-strong {
+  color: #c9d1d9;
+  font-weight: bold;
+}
+
+.dark .markdown-preview .hljs-addition {
+  color: #aff5b4;
+  background-color: #033a16;
+}
+
+.dark .markdown-preview .hljs-deletion {
+  color: #ffdcd7;
+  background-color: #67060c;
+}

@@ -1,9 +1,16 @@
-import React, { ReactNode } from 'react'
+import { PortfolioFooter } from "@/components/portfolio/portfolio-footer"
+import { PortfolioHeaderShell } from "@/components/portfolio/portfolio-header-shell"
 
-export default function PortfolioRoot({children}:{children:ReactNode}) {
+export default function PortfolioLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
-    <>
-    {children}
-    </>
+    <div className="flex min-h-dvh flex-col">
+      <PortfolioHeaderShell />
+      {children}
+      <PortfolioFooter />
+    </div>
   )
 }

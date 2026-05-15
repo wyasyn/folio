@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { IconPhoto } from "@tabler/icons-react"
+import { CloudinaryImage } from "@/components/ui/cloudinary-image"
 
 type ScreenshotGridImageProps = {
   src: string
@@ -27,13 +28,13 @@ export function ScreenshotGridImage({
   }
 
   return (
-    // eslint-disable-next-line @next/next/no-img-element -- URLs may be any host
-    <img
+    <CloudinaryImage
       src={src}
       alt={alt}
-      className="absolute inset-0 size-full object-cover"
-      loading="lazy"
-      decoding="async"
+      preset="screenshot"
+      fill
+      sizes="(max-width: 768px) 50vw, 25vw"
+      className="object-cover"
       style={
         screenshotId != null
           ? { viewTransitionName: `admin-screenshot-${screenshotId}` }

@@ -45,7 +45,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
   return (
     <section className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
-        <h1 className="text-2xl text-foreground">Edit post</h1>
+        <h1 className="text-2xl lg:text-4xl font-semibold text-foreground">Edit post</h1>
         <p className="text-sm text-muted-foreground">
           Update the article content, tags, cover image, and visibility.
         </p>

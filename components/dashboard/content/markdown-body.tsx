@@ -11,12 +11,20 @@ import type { Options as RehypeHighlightOptions } from "rehype-highlight"
 import rehypeRaw from "rehype-raw"
 import { all as lowlightAllGrammars } from "lowlight"
 import "katex/dist/katex.min.css"
+import { CloudinaryImage } from "@/components/ui/cloudinary-image"
 import { cn } from "@/lib/utils"
 import { parseVideoEmbedUrl } from "@/lib/content-markdown"
 
 const rehypeHighlightOptions: RehypeHighlightOptions = {
   detect: true,
   languages: lowlightAllGrammars,
+  aliases: {
+    ts: "typescript",
+    js: "javascript",
+    sh: "bash",
+    shell: "bash",
+    yml: "yaml",
+  },
 }
 
 const rehypeHighlightConfigured: [typeof rehypeHighlight, RehypeHighlightOptions] =
@@ -87,6 +95,55 @@ function MarkdownLink({
   )
 }
 
+function isFencedCode(className?: string) {
+  if (!className) return false
+  return className.includes("hljs") || /language-\w+/.test(className)
+}
+
+function MarkdownPre({
+  children,
+  className,
+  ...rest
+}: ComponentPropsWithoutRef<"pre">) {
+  return (
+    <pre
+      className={cn(
+        "not-prose my-4 overflow-x-auto rounded-md border border-border bg-muted/60 p-3 text-sm",
+        className,
+      )}
+      {...rest}
+    >
+      {children}
+    </pre>
+  )
+}
+
+function MarkdownCode({
+  className,
+  children,
+  ...rest
+}: ComponentPropsWithoutRef<"code">) {
+  if (!isFencedCode(className)) {
+    return (
+      <code
+        className="not-prose rounded bg-muted px-1.5 py-0.5 font-mono text-[0.85em] text-foreground"
+        {...rest}
+      >
+        {children}
+      </code>
+    )
+  }
+
+  return (
+    <code
+      className={cn("block whitespace-pre font-mono text-[0.85em]", className)}
+      {...rest}
+    >
+      {children as ReactNode}
+    </code>
+  )
+}
+
 type MarkdownBodyProps = {
   markdown: string
   className?: string
@@ -96,7 +153,7 @@ export function MarkdownBody({ markdown, className }: MarkdownBodyProps) {
   return (
     <div
       className={cn(
-        "markdown-preview prose prose-neutral max-w-none dark:prose-invert prose-headings:scroll-mt-20 prose-pre:bg-transparent prose-pre:p-0",
+        "markdown-preview prose prose-neutral max-w-none dark:prose-invert prose-headings:scroll-mt-20",
         className,
       )}
     >
@@ -106,30 +163,23 @@ export function MarkdownBody({ markdown, className }: MarkdownBodyProps) {
         components={{
           p: Paragraph,
           a: MarkdownLink,
-          img: ({ alt, src, ...props }) => (
-            // eslint-disable-next-line @next/next/no-img-element -- arbitrary markdown image URLs
-            <img
-              src={typeof src === "string" ? src : undefined}
-              alt={typeof alt === "string" ? alt : ""}
-              className="my-4 max-h-96 w-full rounded-md border border-border object-cover"
-              {...props}
-            />
-          ),
-          code: ({ className, children, ...props }) => {
-            const inline = !className
-            return inline ? (
-              <code
-                className="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.85em] text-foreground"
-                {...props}
-              >
-                {children}
-              </code>
-            ) : (
-              <code className={className} {...props}>
-                {children as ReactNode}
-              </code>
+          img: ({ alt, src }) => {
+            const imageSrc = typeof src === "string" ? src : ""
+            if (!imageSrc) return null
+            return (
+              <CloudinaryImage
+                src={imageSrc}
+                alt={typeof alt === "string" ? alt : ""}
+                preset="markdown"
+                width={960}
+                height={540}
+                sizes="(max-width: 768px) 100vw, 960px"
+                className="my-4 max-h-96 w-full rounded-md border border-border object-cover"
+              />
             )
           },
+          pre: MarkdownPre,
+          code: MarkdownCode,
         }}
       >
         {markdown}

@@ -9,6 +9,7 @@ import {
   IconLoader,
 } from "@tabler/icons-react"
 import { Button } from "@/components/ui/button"
+import { CloudinaryImage } from "@/components/ui/cloudinary-image"
 import { cn } from "@/lib/utils"
 
 type FileError = { name: string; message: string }
@@ -141,10 +142,13 @@ export function MultiImageUploadDropzone({
               key={url}
               className="border-input relative aspect-video overflow-hidden rounded-lg border bg-muted/30"
             >
-              <img
+              <CloudinaryImage
                 src={url}
                 alt=""
-                className="size-full object-cover"
+                preset="screenshot"
+                fill
+                sizes="(max-width: 640px) 50vw, 200px"
+                className="object-cover"
               />
               <button
                 type="button"

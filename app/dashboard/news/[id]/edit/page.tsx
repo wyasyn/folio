@@ -45,7 +45,7 @@ export default async function EditNewsPage({ params }: EditNewsPageProps) {
   return (
     <section className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
-        <h1 className="text-2xl text-foreground">Edit news</h1>
+        <h1 className="text-2xl lg:text-4xl font-semibold text-foreground">Edit news</h1>
         <p className="text-sm text-muted-foreground">
           Update this announcement, tags, cover image, and visibility.
         </p>

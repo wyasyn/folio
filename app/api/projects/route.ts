@@ -1,6 +1,8 @@
 import { Prisma } from "@/generated/prisma/client"
+import { techStackRelationInputForCreate } from "@/lib/catalog-db"
 import db from "@/lib/db"
 import { auth } from "@/lib/auth"
+import { revalidateProject } from "@/lib/revalidate-content"
 import {
   asOptionalString,
   asRequiredString,
@@ -103,22 +105,8 @@ export async function POST(request: Request) {
   const parsedScreenshotUrls = screenshotsResult.urls
 
   try {
-    const existingTechStacks = await db.techStack.findMany({
-      where: { name: { in: parsedTechStacks } },
-      select: { id: true, name: true },
-    })
-
-    const existingByName = new Map(
-      existingTechStacks.map((techStack) => [techStack.name, techStack.id]),
-    )
-
-    const connect = parsedTechStacks
-      .filter((name) => existingByName.has(name))
-      .map((name) => ({ id: existingByName.get(name)! }))
-
-    const create = parsedTechStacks
-      .filter((name) => !existingByName.has(name))
-      .map((name) => ({ name, updatedAt: new Date() }))
+    const techStackRelations =
+      await techStackRelationInputForCreate(parsedTechStacks)
 
     const project = await db.project.create({
       data: {
@@ -133,10 +121,7 @@ export async function POST(request: Request) {
         published: payload.published,
         featured,
         updatedAt: new Date(),
-        TechStack: {
-          connect,
-          create,
-        },
+        TechStack: techStackRelations,
         screenshots: {
           create: parsedScreenshotUrls.map((url) => ({ url })),
         },
@@ -147,6 +132,7 @@ export async function POST(request: Request) {
       },
     })
 
+    revalidateProject(project.slug)
     return Response.json({ data: project }, { status: 201 })
   } catch (error) {
     if (

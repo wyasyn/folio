@@ -9,6 +9,7 @@ import {
   IconLoader,
 } from "@tabler/icons-react"
 import { Button } from "@/components/ui/button"
+import { CloudinaryImage } from "@/components/ui/cloudinary-image"
 import { cn } from "@/lib/utils"
 
 type ImageUploadDropzoneProps = {
@@ -99,10 +100,13 @@ export function ImageUploadDropzone({
 
           {previewUrl ? (
             <div className="absolute inset-0 flex items-center justify-center p-4">
-              <img
+              <CloudinaryImage
                 src={previewUrl}
                 alt="Uploaded image preview"
-                className="size-full object-cover"
+                preset="cover"
+                fill
+                sizes="400px"
+                className="object-cover"
               />
             </div>
           ) : (

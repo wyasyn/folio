@@ -8,18 +8,19 @@ import {
   type KeyboardEvent,
 } from "react"
 import { IconPlus, IconSelector, IconX } from "@tabler/icons-react"
+import {
+  findCanonicalCatalogName,
+  isCatalogNameInList,
+} from "@/lib/catalog-names"
 import { cn } from "@/lib/utils"
 
-type TechStackMultiSelectProps = {
+type CatalogMultiSelectProps = {
   options: string[]
   value: string[]
   onChange: (value: string[]) => void
   error?: string
-}
-
-function isInListCaseInsensitive(list: string[], candidate: string) {
-  const lower = candidate.toLowerCase()
-  return list.some((item) => item.toLowerCase() === lower)
+  /** Singular label for placeholders, e.g. "tag" or "tech stack". */
+  itemName?: string
 }
 
 export function TechStackMultiSelect({
@@ -27,7 +28,8 @@ export function TechStackMultiSelect({
   value,
   onChange,
   error,
-}: TechStackMultiSelectProps) {
+  itemName = "tech stack",
+}: CatalogMultiSelectProps) {
   const [query, setQuery] = useState("")
   const [open, setOpen] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -47,31 +49,36 @@ export function TechStackMultiSelect({
 
   const trimmedQuery = query.trim()
 
+  const sortedOptions = useMemo(
+    () => [...options].sort((a, b) => a.localeCompare(b)),
+    [options]
+  )
+
   const filteredOptions = useMemo(() => {
     const normalizedQuery = trimmedQuery.toLowerCase()
-    return options
-      .filter((option) => !value.includes(option))
+    return sortedOptions
+      .filter((option) => !isCatalogNameInList(value, option))
       .filter((option) =>
         normalizedQuery.length === 0
           ? true
-          : option.toLowerCase().includes(normalizedQuery),
+          : option.toLowerCase().includes(normalizedQuery)
       )
-  }, [options, trimmedQuery, value])
+  }, [sortedOptions, trimmedQuery, value])
 
-  const canAddCustom =
+  const canAddNew =
     trimmedQuery.length > 0 &&
-    !isInListCaseInsensitive(value, trimmedQuery) &&
-    !options.some((o) => o.toLowerCase() === trimmedQuery.toLowerCase())
+    !isCatalogNameInList(value, trimmedQuery) &&
+    !isCatalogNameInList(sortedOptions, trimmedQuery)
 
-  const addTechStack = (techStack: string) => {
-    const next = techStack.trim()
-    if (!next || isInListCaseInsensitive(value, next)) return
-    onChange([...value, next])
+  const addItem = (raw: string) => {
+    const canonical = findCanonicalCatalogName(raw, sortedOptions)
+    if (!canonical || isCatalogNameInList(value, canonical)) return
+    onChange([...value, canonical])
     setQuery("")
   }
 
-  const removeTechStack = (techStack: string) => {
-    onChange(value.filter((item) => item !== techStack))
+  const removeItem = (item: string) => {
+    onChange(value.filter((entry) => entry !== item))
   }
 
   const handleInputKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
@@ -86,14 +93,16 @@ export function TechStackMultiSelect({
     }
     if (event.key !== "Enter") return
     event.preventDefault()
-    if (canAddCustom) {
-      addTechStack(trimmedQuery)
+    if (canAddNew) {
+      addItem(trimmedQuery)
       return
     }
     if (filteredOptions.length === 1) {
-      addTechStack(filteredOptions[0])
+      addItem(filteredOptions[0]!)
     }
   }
+
+  const emptyCatalog = sortedOptions.length === 0
 
   return (
     <div ref={rootRef} className="relative flex flex-col gap-2">
@@ -103,11 +112,11 @@ export function TechStackMultiSelect({
         aria-haspopup="listbox"
         className={cn(
           "flex min-h-10 w-full cursor-text items-start gap-1 rounded-xl border border-input bg-background px-2 py-1.5 text-sm outline-none transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50",
-          error && "border-destructive/60",
+          error && "border-destructive/60"
         )}
         onMouseDown={(event) => {
           const target = event.target as HTMLElement
-          if (target.closest("[data-tech-chip-remove]")) return
+          if (target.closest("[data-catalog-chip-remove]")) return
           if (target.closest("button[data-toggle]")) return
           if (target.closest("input")) return
           event.preventDefault()
@@ -124,11 +133,11 @@ export function TechStackMultiSelect({
               <span className="truncate">{item}</span>
               <button
                 type="button"
-                data-tech-chip-remove
+                data-catalog-chip-remove
                 className="rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
                 onClick={(event) => {
                   event.stopPropagation()
-                  removeTechStack(item)
+                  removeItem(item)
                 }}
                 aria-label={`Remove ${item}`}
               >
@@ -145,7 +154,9 @@ export function TechStackMultiSelect({
             className="min-w-32 flex-1 border-0 bg-transparent py-1 text-sm outline-none placeholder:text-muted-foreground"
             placeholder={
               value.length === 0
-                ? "Search or type a new tech stack…"
+                ? emptyCatalog
+                  ? `Type a new ${itemName}…`
+                  : `Search or add a ${itemName}…`
                 : "Add more…"
             }
           />
@@ -161,7 +172,9 @@ export function TechStackMultiSelect({
             inputRef.current?.focus()
           }}
           aria-label={
-            open ? "Close tech stack suggestions" : "Open tech stack suggestions"
+            open
+              ? `Close ${itemName} suggestions`
+              : `Open ${itemName} suggestions`
           }
         >
           <IconSelector className="size-5" />
@@ -173,27 +186,29 @@ export function TechStackMultiSelect({
           className="absolute left-0 right-0 top-full z-20 mt-1 flex max-h-44 flex-col divide-y divide-border overflow-y-auto overflow-x-hidden rounded-xl border border-border bg-card shadow-sm"
           role="listbox"
         >
-          {canAddCustom && (
+          {canAddNew && (
             <button
               type="button"
-              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-left hover:bg-muted/60"
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-muted/60"
               onMouseDown={(event) => event.preventDefault()}
               onClick={() => {
-                addTechStack(trimmedQuery)
+                addItem(trimmedQuery)
                 inputRef.current?.focus()
               }}
             >
               <IconPlus className="size-4 shrink-0 text-muted-foreground" />
               <span className="font-medium text-foreground">
-                {`Add "${trimmedQuery}"`}
+                {`Create "${trimmedQuery}"`}
               </span>
             </button>
           )}
-          {filteredOptions.length === 0 && !canAddCustom ? (
+          {filteredOptions.length === 0 && !canAddNew ? (
             <p className="px-3 py-2 text-sm text-muted-foreground">
               {trimmedQuery
-                ? "No matching tech stacks."
-                : "Type to search or add a custom stack."}
+                ? `No matching ${itemName}s.`
+                : emptyCatalog
+                  ? `No ${itemName}s in the catalog yet — type to add one.`
+                  : `All catalog ${itemName}s are selected.`}
             </p>
           ) : (
             filteredOptions.map((option) => (
@@ -203,7 +218,7 @@ export function TechStackMultiSelect({
                 className="flex w-full items-center justify-between px-3 py-2 text-sm hover:bg-muted/60"
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => {
-                  addTechStack(option)
+                  addItem(option)
                   inputRef.current?.focus()
                 }}
               >
