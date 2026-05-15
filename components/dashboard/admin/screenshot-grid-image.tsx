@@ -7,6 +7,7 @@ import { CloudinaryImage } from "@/components/ui/cloudinary-image"
 type ScreenshotGridImageProps = {
   src: string
   alt: string
+  blurDataURL?: string
   /** When set, participates in shared view transitions with the photo viewer image. */
   screenshotId?: number
 }
@@ -14,6 +15,7 @@ type ScreenshotGridImageProps = {
 export function ScreenshotGridImage({
   src,
   alt,
+  blurDataURL,
   screenshotId,
 }: ScreenshotGridImageProps) {
   const [failed, setFailed] = useState(!src.trim())
@@ -33,8 +35,8 @@ export function ScreenshotGridImage({
       alt={alt}
       preset="screenshot"
       fill
+      blurDataURL={blurDataURL}
       sizes="(max-width: 768px) 50vw, 25vw"
-      className="object-cover"
       style={
         screenshotId != null
           ? { viewTransitionName: `admin-screenshot-${screenshotId}` }

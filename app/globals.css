@@ -125,7 +125,7 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border/50 outline-ring/50;
     }
   body {
     @apply bg-background text-muted-foreground font-sans ;
@@ -137,7 +137,7 @@
     @apply font-sans;
     }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-heading text-foreground font-normal;
+    @apply font-heading text-foreground font-normal tracking-tight;
     }
   
 }
@@ -246,6 +246,20 @@
 
 ::view-transition-new(page-back) {
   animation: 240ms ease-out 60ms both page-vt-fade-in;
+}
+
+@layer components {
+  .hero-headline-glow {
+    text-shadow:
+      0 0 24px color-mix(in oklch, var(--foreground) 35%, transparent),
+      0 0 48px color-mix(in oklch, var(--primary) 25%, transparent);
+  }
+
+  .dark .hero-headline-glow {
+    text-shadow:
+      0 0 32px color-mix(in oklch, var(--foreground) 45%, transparent),
+      0 0 64px color-mix(in oklch, var(--primary) 35%, transparent);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -51,3 +51,65 @@ export function getPublishedNewsBySlug(slug: string) {
     }
   )()
 }
+
+const relatedNewsSelect = {
+  id: true,
+  slug: true,
+  title: true,
+  description: true,
+  coverImage: true,
+  readTime: true,
+} as const
+
+export function getRelatedNewsBySlug(slug: string, limit = 3) {
+  return unstable_cache(
+    async () => {
+      const current = await db.news.findFirst({
+        where: { slug, published: true },
+        select: { tags: { select: { name: true } } },
+      })
+
+      if (!current) {
+        return []
+      }
+
+      const tagNames = current.tags.map((tag) => tag.name)
+      const excludeSlug = { not: slug }
+
+      let related =
+        tagNames.length > 0
+          ? await db.news.findMany({
+              where: {
+                published: true,
+                slug: excludeSlug,
+                tags: { some: { name: { in: tagNames } } },
+              },
+              select: relatedNewsSelect,
+              orderBy: { updatedAt: "desc" },
+              take: limit,
+            })
+          : []
+
+      if (related.length < limit) {
+        const existingSlugs = new Set([slug, ...related.map((item) => item.slug)])
+        const fallback = await db.news.findMany({
+          where: {
+            published: true,
+            slug: { notIn: [...existingSlugs] },
+          },
+          select: relatedNewsSelect,
+          orderBy: { updatedAt: "desc" },
+          take: limit - related.length,
+        })
+        related = [...related, ...fallback]
+      }
+
+      return related
+    },
+    ["related-news", slug, String(limit)],
+    {
+      tags: [CACHE_TAGS.news, CACHE_TAGS.newsItem(slug)],
+      revalidate: PUBLIC_REVALIDATE_SECONDS,
+    }
+  )()
+}

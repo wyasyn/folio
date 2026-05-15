@@ -1,4 +1,5 @@
 import { ContentListCard } from "@/components/portfolio/content-list-card"
+import { fetchBlurDataUrl } from "@/lib/cloudinary"
 import { cn } from "@/lib/utils"
 
 export type ContentListGridItem = {
@@ -16,7 +17,7 @@ type ContentListGridProps = {
   className?: string
 }
 
-export function ContentListGrid({
+export async function ContentListGrid({
   items,
   emptyMessage = "Nothing published yet.",
   className,
@@ -25,6 +26,15 @@ export function ContentListGrid({
     return <p className="text-muted-foreground">{emptyMessage}</p>
   }
 
+  const itemsWithBlur = await Promise.all(
+    items.map(async (item) => ({
+      ...item,
+      coverBlurDataURL: item.coverImage
+        ? await fetchBlurDataUrl(item.coverImage)
+        : undefined,
+    })),
+  )
+
   return (
     <ul
       className={cn(
@@ -32,13 +42,14 @@ export function ContentListGrid({
         className,
       )}
     >
-      {items.map((item) => (
+      {itemsWithBlur.map((item) => (
         <li key={item.id} className="min-h-0">
           <ContentListCard
             href={item.href}
             title={item.title}
             description={item.description}
             coverImage={item.coverImage}
+            coverBlurDataURL={item.coverBlurDataURL}
             meta={item.meta}
           />
         </li>

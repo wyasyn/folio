@@ -8,6 +8,7 @@ import { IconCheck, IconLoader2 } from "@tabler/icons-react"
 import { ImageUploadDropzone } from "@/components/ui/image-upload-dropzone"
 import { uploadImageToCloudinary } from "@/lib/cloudinary-upload"
 import { uploadPresets } from "@/lib/upload-presets"
+import { formatPhoneDisplay } from "@/lib/phone"
 import { cn } from "@/lib/utils"
 
 type ProfileSettingsFormProps = {
@@ -24,6 +25,9 @@ type ProfileSettingsFormProps = {
     linkedin: string
     twitter: string
     publicEmail: string
+    publicPhone: string
+    contactHours: string
+    mapEmbedUrl: string
     resumeUrl: string
     openToWork: boolean
   }
@@ -48,6 +52,11 @@ export function ProfileSettingsForm({ initialProfile }: ProfileSettingsFormProps
   const [linkedin, setLinkedin] = useState(initialProfile.linkedin)
   const [twitter, setTwitter] = useState(initialProfile.twitter)
   const [publicEmail, setPublicEmail] = useState(initialProfile.publicEmail)
+  const [publicPhone, setPublicPhone] = useState(
+    () => formatPhoneDisplay(initialProfile.publicPhone) ?? initialProfile.publicPhone,
+  )
+  const [contactHours, setContactHours] = useState(initialProfile.contactHours)
+  const [mapEmbedUrl, setMapEmbedUrl] = useState(initialProfile.mapEmbedUrl)
   const [resumeUrl, setResumeUrl] = useState(initialProfile.resumeUrl)
   const [openToWork, setOpenToWork] = useState(initialProfile.openToWork)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -71,6 +80,9 @@ export function ProfileSettingsForm({ initialProfile }: ProfileSettingsFormProps
           initialProfile.linkedin ||
           initialProfile.twitter ||
           initialProfile.publicEmail ||
+          initialProfile.publicPhone ||
+          initialProfile.contactHours ||
+          initialProfile.mapEmbedUrl ||
           initialProfile.resumeUrl ||
           initialProfile.openToWork,
       ),
@@ -112,6 +124,9 @@ export function ProfileSettingsForm({ initialProfile }: ProfileSettingsFormProps
           linkedin,
           twitter,
           publicEmail,
+          publicPhone,
+          contactHours,
+          mapEmbedUrl,
           resumeUrl,
           openToWork,
         }),
@@ -293,6 +308,51 @@ export function ProfileSettingsForm({ initialProfile }: ProfileSettingsFormProps
                   placeholder="you@example.com"
                   maxLength={320}
                 />
+              </div>
+
+              <div className="rounded-lg border border-border p-4 space-y-4">
+                <div>
+                  <p className="text-sm font-medium">Contact page</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Shown on your public contact page. Location is set under Personal Data.
+                  </p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">Public phone</label>
+                  <Input
+                    type="tel"
+                    value={publicPhone}
+                    onChange={(event) => setPublicPhone(event.target.value)}
+                    placeholder="+1 555 123 4567"
+                    maxLength={40}
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">Business hours</label>
+                  <Input
+                    value={contactHours}
+                    onChange={(event) => setContactHours(event.target.value)}
+                    placeholder="Monday – Friday, 9:00 AM – 6:00 PM"
+                    maxLength={200}
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">Map embed URL</label>
+                  <Input
+                    type="url"
+                    value={mapEmbedUrl}
+                    onChange={(event) => setMapEmbedUrl(event.target.value)}
+                    placeholder="https://www.google.com/maps/embed?pb=..."
+                    maxLength={800}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Google Maps → Share → Embed a map → copy the iframe{" "}
+                    <code className="text-foreground/80">src</code> URL.
+                  </p>
+                </div>
               </div>
 
               <div className="space-y-1.5">

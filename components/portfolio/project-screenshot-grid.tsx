@@ -1,5 +1,6 @@
 import { ScreenshotGridImage } from "@/components/dashboard/admin/screenshot-grid-image"
 import { ScreenshotPhotoNavLink } from "@/components/dashboard/admin/screenshot-photo-nav-link"
+import { fetchBlurDataUrl } from "@/lib/cloudinary"
 import { projectScreenshotHref } from "@/lib/public/project-screenshot-types"
 
 type ProjectScreenshotGridProps = {
@@ -8,18 +9,25 @@ type ProjectScreenshotGridProps = {
   screenshots: Array<{ id: number; url: string }>
 }
 
-export function ProjectScreenshotGrid({
+export async function ProjectScreenshotGrid({
   projectSlug,
   projectTitle,
   screenshots,
 }: ProjectScreenshotGridProps) {
   if (screenshots.length === 0) return null
 
+  const screenshotsWithBlur = await Promise.all(
+    screenshots.map(async (shot) => ({
+      ...shot,
+      blurDataURL: await fetchBlurDataUrl(shot.url),
+    })),
+  )
+
   return (
     <section className="space-y-4">
       <h2 className="text-xl font-semibold">Screenshots</h2>
       <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {screenshots.map((shot) => (
+        {screenshotsWithBlur.map((shot) => (
           <li key={shot.id}>
             <ScreenshotPhotoNavLink
               href={projectScreenshotHref(projectSlug, shot.id)}
@@ -31,6 +39,7 @@ export function ProjectScreenshotGrid({
               <ScreenshotGridImage
                 screenshotId={shot.id}
                 src={shot.url}
+                blurDataURL={shot.blurDataURL}
                 alt={`Screenshot for ${projectTitle}`}
               />
             </ScreenshotPhotoNavLink>

@@ -17,6 +17,12 @@ const BLUR_TRANSFORM = "f_webp,q_20,w_16,e_blur:1000"
 
 const CLOUDINARY_HOST = "res.cloudinary.com"
 
+const UNSPLASH_HOST = "images.unsplash.com"
+
+/** Shown instantly while a real blur is fetched (Next.js requires a data URL). */
+export const DEFAULT_BLUR_DATA_URL =
+  "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDAQ4OD08NGxQUFjM3ODdwWFtYWFtYWFtYWFtYWFtYWFtYWFtYWFtYWFtYWFtYWFtYWFtYWFtYWFtYWFtYWFtYWFp//wgARCAABAAEDAREAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAX/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIQAxAAAAGvAP/EABQQAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQEAAQUCf//EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQMBAT8Bf//EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQIBAT8Bf//Z"
+
 export function isCloudinaryUrl(url: string): boolean {
   try {
     return new URL(url).hostname === CLOUDINARY_HOST
@@ -55,6 +61,65 @@ export function cloudinaryBlurUrl(url: string | null | undefined): string {
   if (!isCloudinaryUrl(url)) return ""
 
   return withCloudinaryTransform(url, BLUR_TRANSFORM)
+}
+
+export function isOptimizableImageUrl(url: string): boolean {
+  try {
+    const host = new URL(url).hostname
+    return host === CLOUDINARY_HOST || host === UNSPLASH_HOST
+  } catch {
+    return false
+  }
+}
+
+/** Low-resolution URL used to build a `blurDataURL` data URI. */
+export function tinyImageUrl(url: string | null | undefined): string {
+  if (!url?.trim()) return ""
+  if (isCloudinaryUrl(url)) return cloudinaryBlurUrl(url)
+
+  try {
+    const parsed = new URL(url)
+    if (parsed.hostname !== UNSPLASH_HOST) return ""
+    parsed.searchParams.set("w", "16")
+    parsed.searchParams.set("q", "20")
+    parsed.searchParams.set("auto", "format")
+    return parsed.toString()
+  } catch {
+    return ""
+  }
+}
+
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  if (typeof Buffer !== "undefined") {
+    return Buffer.from(buffer).toString("base64")
+  }
+  const bytes = new Uint8Array(buffer)
+  let binary = ""
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]!)
+  }
+  return btoa(binary)
+}
+
+/** Fetches a tiny preview and returns a base64 data URL for `next/image` blur placeholders. */
+export async function fetchBlurDataUrl(
+  url: string | null | undefined,
+): Promise<string> {
+  const tiny = tinyImageUrl(url)
+  if (!tiny) return DEFAULT_BLUR_DATA_URL
+
+  try {
+    const res = await fetch(tiny, {
+      next: { revalidate: 60 * 60 * 24 * 7 },
+    })
+    if (!res.ok) return DEFAULT_BLUR_DATA_URL
+    const contentType =
+      res.headers.get("content-type")?.split(";")[0]?.trim() || "image/webp"
+    const base64 = arrayBufferToBase64(await res.arrayBuffer())
+    return `data:${contentType};base64,${base64}`
+  } catch {
+    return DEFAULT_BLUR_DATA_URL
+  }
 }
 
 /** Eager transformation applied at upload time (signed with upload params). */

@@ -1,5 +1,7 @@
 import db from "@/lib/db"
 import { auth } from "@/lib/auth"
+import { isAllowedMapEmbedUrl } from "@/lib/contact-map"
+import { normalizePhone } from "@/lib/phone"
 import { revalidateSiteProfile } from "@/lib/revalidate-content"
 
 type UpdateProfilePayload = {
@@ -14,6 +16,9 @@ type UpdateProfilePayload = {
   linkedin?: unknown
   twitter?: unknown
   publicEmail?: unknown
+  publicPhone?: unknown
+  contactHours?: unknown
+  mapEmbedUrl?: unknown
   resumeUrl?: unknown
   openToWork?: unknown
 }
@@ -60,6 +65,23 @@ export async function PATCH(request: Request) {
   const linkedin = asOptionalTrimmedString(payload.linkedin, 500)
   const twitter = asOptionalTrimmedString(payload.twitter, 500)
   const publicEmail = asOptionalTrimmedString(payload.publicEmail, 320)
+  const publicPhoneRaw = asOptionalTrimmedString(payload.publicPhone, 40)
+  const publicPhone =
+    publicPhoneRaw === undefined
+      ? undefined
+      : publicPhoneRaw === null
+        ? null
+        : normalizePhone(publicPhoneRaw) ?? publicPhoneRaw
+  const contactHours = asOptionalTrimmedString(payload.contactHours, 200)
+  const mapEmbedUrlRaw = asOptionalTrimmedString(payload.mapEmbedUrl, 800)
+  const mapEmbedUrl =
+    mapEmbedUrlRaw === undefined
+      ? undefined
+      : mapEmbedUrlRaw === null
+        ? null
+        : isAllowedMapEmbedUrl(mapEmbedUrlRaw)
+          ? mapEmbedUrlRaw
+          : undefined
   const resumeUrl = asOptionalTrimmedString(payload.resumeUrl, 500)
   const openToWork =
     payload.openToWork === undefined
@@ -80,13 +102,16 @@ export async function PATCH(request: Request) {
     linkedin === undefined ||
     twitter === undefined ||
     publicEmail === undefined ||
+    publicPhone === undefined ||
+    contactHours === undefined ||
+    mapEmbedUrl === undefined ||
     resumeUrl === undefined ||
     openToWork === null
   ) {
     return Response.json(
       {
         error:
-          "Invalid profile payload. Ensure all values are strings within allowed lengths.",
+          "Invalid profile payload. Ensure all values are strings within allowed lengths and map embed URLs use a valid Google Maps embed link.",
       },
       { status: 400 },
     )
@@ -109,6 +134,9 @@ export async function PATCH(request: Request) {
         linkedin,
         twitter,
         publicEmail,
+        publicPhone,
+        contactHours,
+        mapEmbedUrl,
         resumeUrl,
         openToWork,
         updatedAt: new Date(),
@@ -127,6 +155,9 @@ export async function PATCH(request: Request) {
         linkedin: true,
         twitter: true,
         publicEmail: true,
+        publicPhone: true,
+        contactHours: true,
+        mapEmbedUrl: true,
         resumeUrl: true,
         openToWork: true,
       },

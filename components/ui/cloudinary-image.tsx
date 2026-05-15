@@ -1,10 +1,12 @@
 "use client"
 
 import Image from "next/image"
+import { useEffect, useState } from "react"
 import {
-  cloudinaryBlurUrl,
   cloudinaryUrl,
-  isCloudinaryUrl,
+  DEFAULT_BLUR_DATA_URL,
+  fetchBlurDataUrl,
+  isOptimizableImageUrl,
   PRESET_DIMENSIONS,
   type CloudinaryImagePreset,
 } from "@/lib/cloudinary"
@@ -21,6 +23,8 @@ type CloudinaryImageProps = {
   width?: number
   height?: number
   style?: React.CSSProperties
+  /** Precomputed on the server when possible for instant, accurate blur. */
+  blurDataURL?: string
   onError?: () => void
 }
 
@@ -35,22 +39,40 @@ export function CloudinaryImage({
   width,
   height,
   style,
+  blurDataURL: blurDataURLProp,
   onError,
 }: CloudinaryImageProps) {
+  const [blurDataURL, setBlurDataURL] = useState(
+    blurDataURLProp ?? DEFAULT_BLUR_DATA_URL,
+  )
+
+  useEffect(() => {
+    if (blurDataURLProp) {
+      setBlurDataURL(blurDataURLProp)
+      return
+    }
+    let cancelled = false
+    void fetchBlurDataUrl(src).then((dataUrl) => {
+      if (!cancelled) setBlurDataURL(dataUrl)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [src, blurDataURLProp])
+
   if (!src.trim()) return null
 
   const optimizedSrc = cloudinaryUrl(src, preset)
-  const blur = cloudinaryBlurUrl(src)
   const dims = PRESET_DIMENSIONS[preset]
   const useFill = fill ?? (!width && !height)
 
-  if (!isCloudinaryUrl(src)) {
+  if (!isOptimizableImageUrl(src)) {
     return (
-      // eslint-disable-next-line @next/next/no-img-element -- non-Cloudinary hosts (e.g. seed URLs)
+      // eslint-disable-next-line @next/next/no-img-element -- unknown remote hosts
       <img
         src={src}
         alt={alt}
-        className={className}
+        className={cn(useFill && "object-cover", className)}
         style={style}
         loading={priority ? "eager" : "lazy"}
         decoding="async"
@@ -62,14 +84,13 @@ export function CloudinaryImage({
   const shared = {
     src: optimizedSrc,
     alt,
-    className: cn(className),
+    className: cn(useFill && "object-cover", className),
     style,
     priority,
     sizes,
     onError,
-    ...(blur
-      ? { placeholder: "blur" as const, blurDataURL: blur }
-      : {}),
+    placeholder: "blur" as const,
+    blurDataURL,
   }
 
   if (useFill) {

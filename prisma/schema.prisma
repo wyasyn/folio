@@ -103,11 +103,14 @@ model user {
   banExpires    DateTime?
 
   // Social & contact links
-  website     String?
-  github      String?
-  linkedin    String?
-  twitter     String?
-  publicEmail String?
+  website       String?
+  github        String?
+  linkedin      String?
+  twitter       String?
+  publicEmail   String?
+  publicPhone   String?
+  contactHours  String?
+  mapEmbedUrl   String?
 
   // Resume
   resumeUrl String?

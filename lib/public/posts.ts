@@ -51,3 +51,65 @@ export function getPublishedPostBySlug(slug: string) {
     }
   )()
 }
+
+const relatedPostSelect = {
+  id: true,
+  slug: true,
+  title: true,
+  description: true,
+  coverImage: true,
+  readTime: true,
+} as const
+
+export function getRelatedPostsBySlug(slug: string, limit = 3) {
+  return unstable_cache(
+    async () => {
+      const current = await db.post.findFirst({
+        where: { slug, published: true },
+        select: { Tag: { select: { name: true } } },
+      })
+
+      if (!current) {
+        return []
+      }
+
+      const tagNames = current.Tag.map((tag) => tag.name)
+      const excludeSlug = { not: slug }
+
+      let related =
+        tagNames.length > 0
+          ? await db.post.findMany({
+              where: {
+                published: true,
+                slug: excludeSlug,
+                Tag: { some: { name: { in: tagNames } } },
+              },
+              select: relatedPostSelect,
+              orderBy: { updatedAt: "desc" },
+              take: limit,
+            })
+          : []
+
+      if (related.length < limit) {
+        const existingSlugs = new Set([slug, ...related.map((post) => post.slug)])
+        const fallback = await db.post.findMany({
+          where: {
+            published: true,
+            slug: { notIn: [...existingSlugs] },
+          },
+          select: relatedPostSelect,
+          orderBy: { updatedAt: "desc" },
+          take: limit - related.length,
+        })
+        related = [...related, ...fallback]
+      }
+
+      return related
+    },
+    ["related-posts", slug, String(limit)],
+    {
+      tags: [CACHE_TAGS.posts, CACHE_TAGS.post(slug)],
+      revalidate: PUBLIC_REVALIDATE_SECONDS,
+    }
+  )()
+}

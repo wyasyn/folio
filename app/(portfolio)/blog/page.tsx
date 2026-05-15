@@ -1,6 +1,7 @@
 import Link from "next/link"
-import { ContentListGrid } from "@/components/portfolio/content-list-grid"
-import { getPublishedPosts } from "@/lib/public/posts"
+import { Suspense } from "react"
+import { PostsListContent } from "@/components/portfolio/blog/posts-list-content"
+import { ContentListGridSkeleton } from "@/components/portfolio/skeletons/content-list-grid-skeleton"
 import { siteConfig } from "@/lib/site-config"
 
 export const revalidate = 3600
@@ -14,15 +15,11 @@ export const metadata = {
   },
 }
 
-export default async function BlogPage() {
-  const posts = await getPublishedPosts()
-
+export default function BlogPage() {
   return (
     <main className="mx-auto max-w-6xl px-4 py-12">
       <header className="mb-10 space-y-2">
-        <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">
-          ← Home
-        </Link>
+       
         <div className="flex flex-wrap items-end justify-between gap-4">
           <h1 className="text-3xl font-bold tracking-tight">Blog</h1>
           <Link
@@ -32,18 +29,13 @@ export default async function BlogPage() {
             RSS feed
           </Link>
         </div>
+        <p>
+          Here you can find all of my blog posts.
+        </p>
       </header>
-      <ContentListGrid
-        items={posts.map((post) => ({
-          id: post.id,
-          href: `/blog/${post.slug}`,
-          title: post.title,
-          description: post.description,
-          coverImage: post.coverImage,
-          meta: post.readTime > 0 ? `${post.readTime} min read` : undefined,
-        }))}
-        emptyMessage="No posts published yet."
-      />
+      <Suspense fallback={<ContentListGridSkeleton count={6} />}>
+        <PostsListContent />
+      </Suspense>
     </main>
   )
 }

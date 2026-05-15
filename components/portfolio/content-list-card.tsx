@@ -7,6 +7,7 @@ type ContentListCardProps = {
   title: string
   description?: string | null
   coverImage?: string | null
+  coverBlurDataURL?: string
   meta?: string
   className?: string
 }
@@ -16,6 +17,7 @@ export function ContentListCard({
   title,
   description,
   coverImage,
+  coverBlurDataURL,
   meta,
   className,
 }: ContentListCardProps) {
@@ -23,7 +25,7 @@ export function ContentListCard({
     <Link
       href={href}
       className={cn(
-        "group flex h-full min-h-[22rem] flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-foreground/20",
+        "group flex h-full min-h-[22rem] flex-col overflow-hidden rounded-xl border bg-card transition-colors hover:border-border/70",
         className,
       )}
     >
@@ -34,8 +36,9 @@ export function ContentListCard({
             alt=""
             preset="cover"
             fill
+            blurDataURL={coverBlurDataURL}
             sizes="(max-width: 768px) 100vw, 33vw"
-            className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+            className="transition-transform duration-300 group-hover:scale-[1.02]"
           />
         ) : (
           <div className="absolute inset-0 bg-muted" aria-hidden />

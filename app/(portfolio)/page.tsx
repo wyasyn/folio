@@ -1,10 +1,10 @@
-import Link from "next/link"
+import { Suspense } from "react"
 import { HeroSection } from "@/components/portfolio/hero-section"
-import { ContentListGrid } from "@/components/portfolio/content-list-grid"
+import { FeaturedPostsSection } from "@/components/portfolio/blog/featured-posts-section"
+import { FeaturedNewsSection } from "@/components/portfolio/news/featured-news-section"
+import { FeaturedProjectsSection } from "@/components/portfolio/projects/featured-projects-section"
+import { FeaturedSectionSkeleton } from "@/components/portfolio/skeletons/featured-section-skeleton"
 import { getSiteProfile } from "@/lib/public/site-profile"
-import { getPublishedPosts } from "@/lib/public/posts"
-import { getPublishedNewsList } from "@/lib/public/news"
-import { getPublishedProjects } from "@/lib/public/projects"
 
 export const revalidate = 3600
 
@@ -13,80 +13,25 @@ export const metadata = {
 }
 
 export default async function PortfolioHome() {
-  const [profile, posts, news, projects] = await Promise.all([
-    getSiteProfile(),
-    getPublishedPosts(),
-    getPublishedNewsList(),
-    getPublishedProjects(),
-  ])
-
-  const featuredPosts = posts.filter((p) => p.featured).slice(0, 3)
-  const featuredNews = news.filter((n) => n.featured).slice(0, 3)
-  const featuredProjects = projects.filter((p) => p.featured).slice(0, 3)
+  const profile = await getSiteProfile()
 
   return (
-    <main className="mx-auto max-w-6xl space-y-16 px-4 py-12">
+    <main className="space-y-16">
       <HeroSection profile={profile} />
 
-      {featuredProjects.length > 0 ? (
-        <section className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-semibold">Featured projects</h2>
-            <Link href="/projects" className="text-sm text-muted-foreground hover:text-foreground">
-              View all
-            </Link>
-          </div>
-          <ContentListGrid
-            items={featuredProjects.map((project) => ({
-              id: project.id,
-              href: `/projects/${project.slug}`,
-              title: project.title,
-              description: project.description,
-              coverImage: project.coverImage,
-            }))}
-          />
-        </section>
-      ) : null}
+      <div className="mx-auto max-w-6xl space-y-16 px-4 pb-12">
+        <Suspense fallback={<FeaturedSectionSkeleton title="Featured projects" />}>
+          <FeaturedProjectsSection />
+        </Suspense>
 
-      {featuredPosts.length > 0 ? (
-        <section className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-semibold">Featured posts</h2>
-            <Link href="/blog" className="text-sm text-muted-foreground hover:text-foreground">
-              View all
-            </Link>
-          </div>
-          <ContentListGrid
-            items={featuredPosts.map((post) => ({
-              id: post.id,
-              href: `/blog/${post.slug}`,
-              title: post.title,
-              description: post.description,
-              coverImage: post.coverImage,
-            }))}
-          />
-        </section>
-      ) : null}
+        <Suspense fallback={<FeaturedSectionSkeleton title="Featured posts" />}>
+          <FeaturedPostsSection />
+        </Suspense>
 
-      {featuredNews.length > 0 ? (
-        <section className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-semibold">Featured news</h2>
-            <Link href="/news" className="text-sm text-muted-foreground hover:text-foreground">
-              View all
-            </Link>
-          </div>
-          <ContentListGrid
-            items={featuredNews.map((item) => ({
-              id: item.id,
-              href: `/news/${item.slug}`,
-              title: item.title,
-              description: item.description,
-              coverImage: item.coverImage,
-            }))}
-          />
-        </section>
-      ) : null}
+        <Suspense fallback={<FeaturedSectionSkeleton title="Featured news" />}>
+          <FeaturedNewsSection />
+        </Suspense>
+      </div>
     </main>
   )
 }

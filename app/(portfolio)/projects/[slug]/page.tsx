@@ -1,12 +1,14 @@
 import Link from "next/link"
-import { notFound } from "next/navigation"
-import { ProjectScreenshotGrid } from "@/components/portfolio/project-screenshot-grid"
-import { CloudinaryImage } from "@/components/ui/cloudinary-image"
-import { MarkdownBody } from "@/components/dashboard/content/markdown-body"
+import { Suspense } from "react"
+import { ProjectDetailArticle } from "@/components/portfolio/projects/project-detail-article"
+import { RelatedProjects } from "@/components/portfolio/projects/related-projects"
+import { BlogPostDetailSkeleton } from "@/components/portfolio/skeletons/blog-post-detail-skeleton"
+import { ContentListGridSkeleton } from "@/components/portfolio/skeletons/content-list-grid-skeleton"
 import {
   getPublishedProjectBySlug,
   getPublishedProjectSlugs,
 } from "@/lib/public/projects"
+import { IconArrowLeft } from "@tabler/icons-react"
 
 export const revalidate = 3600
 export const dynamicParams = true
@@ -32,76 +34,21 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function ProjectDetailPage({ params }: PageProps) {
   const { slug } = await params
-  const project = await getPublishedProjectBySlug(slug)
-  if (!project) notFound()
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-12">
       <Link
         href="/projects"
-        className="mb-8 inline-block text-sm text-muted-foreground hover:text-foreground"
+        className="mb-8 gap-2 flex items-center text-sm text-muted-foreground hover:text-foreground"
       >
-        ← Projects
+        <IconArrowLeft data-icon="inline-start" /> Projects
       </Link>
-      <article className="space-y-8">
-        {project.coverImage ? (
-          <div className="relative aspect-video w-full overflow-hidden rounded-xl border border-border">
-            <CloudinaryImage
-              src={project.coverImage}
-              alt=""
-              preset="cover"
-              fill
-              priority
-              sizes="(max-width: 768px) 100vw, 896px"
-              className="object-cover"
-            />
-          </div>
-        ) : null}
-        <header className="space-y-3">
-          <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
-            {project.title}
-          </h1>
-          <p className="text-lg text-muted-foreground">{project.description}</p>
-          <div className="flex flex-wrap gap-2">
-            {project.TechStack.map((stack) => (
-              <span
-                key={stack.name}
-                className="rounded-full border border-border px-3 py-1 text-xs font-medium"
-              >
-                {stack.name}
-              </span>
-            ))}
-          </div>
-          <div className="flex flex-wrap gap-4 text-sm">
-            {project.liveUrl ? (
-              <a
-                href={project.liveUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary underline-offset-4 hover:underline"
-              >
-                Live site
-              </a>
-            ) : null}
-            {project.githubUrl ? (
-              <a
-                href={project.githubUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary underline-offset-4 hover:underline"
-              >
-                GitHub
-              </a>
-            ) : null}
-          </div>
-        </header>
-        <ProjectScreenshotGrid
-          projectSlug={project.slug}
-          projectTitle={project.title}
-          screenshots={project.screenshots}
-        />
-        <MarkdownBody markdown={project.content} />
-      </article>
+      <Suspense fallback={<BlogPostDetailSkeleton />}>
+        <ProjectDetailArticle slug={slug} />
+      </Suspense>
+      <Suspense fallback={<ContentListGridSkeleton count={3} className="mt-16" />}>
+        <RelatedProjects slug={slug} />
+      </Suspense>
     </main>
   )
 }

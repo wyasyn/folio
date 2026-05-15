@@ -1,6 +1,8 @@
 import { unstable_cache } from "next/cache"
 import db from "@/lib/db"
 import { CACHE_TAGS, PUBLIC_REVALIDATE_SECONDS } from "@/lib/cache/tags"
+import { sanitizeMapEmbedUrl } from "@/lib/contact-map"
+import { formatPhoneDisplay, formatPhoneTel } from "@/lib/phone"
 import { siteConfig } from "@/lib/site-config"
 
 export type SiteSocialLink = {
@@ -17,6 +19,23 @@ export type SiteProfile = {
   bio: string | null
   socialLinks: SiteSocialLink[]
 }
+
+export type ContactInfo = {
+  phone: string | null
+  phoneTel: string | null
+  email: string | null
+  address: string | null
+  hours: string | null
+  mapEmbedUrl: string | null
+}
+
+const contactInfoSelect = {
+  publicEmail: true,
+  publicPhone: true,
+  location: true,
+  contactHours: true,
+  mapEmbedUrl: true,
+} as const
 
 const userSelect = {
   name: true,
@@ -73,6 +92,60 @@ function buildSocialLinks(user: {
 
   return links
 }
+
+function buildContactInfo(user: {
+  publicEmail: string | null
+  publicPhone: string | null
+  location: string | null
+  contactHours: string | null
+  mapEmbedUrl: string | null
+} | null): ContactInfo {
+  if (!user) {
+    return {
+      phone: null,
+      phoneTel: null,
+      email: null,
+      address: null,
+      hours: null,
+      mapEmbedUrl: null,
+    }
+  }
+
+  const rawPhone = user.publicPhone?.trim() || null
+
+  return {
+    phone: formatPhoneDisplay(rawPhone),
+    phoneTel: formatPhoneTel(rawPhone),
+    email: user.publicEmail?.trim() || null,
+    address: user.location?.trim() || null,
+    hours: user.contactHours?.trim() || null,
+    mapEmbedUrl: sanitizeMapEmbedUrl(user.mapEmbedUrl),
+  }
+}
+
+async function fetchOwnerContactUser() {
+  return siteConfig.ownerUserId
+    ? db.user.findUnique({
+        where: { id: siteConfig.ownerUserId },
+        select: contactInfoSelect,
+      })
+    : db.user.findFirst({
+        orderBy: { createdAt: "asc" },
+        select: contactInfoSelect,
+      })
+}
+
+export const getContactInfo = unstable_cache(
+  async (): Promise<ContactInfo> => {
+    const user = await fetchOwnerContactUser()
+    return buildContactInfo(user)
+  },
+  ["contact-info"],
+  {
+    tags: [CACHE_TAGS.siteProfile],
+    revalidate: PUBLIC_REVALIDATE_SECONDS,
+  },
+)
 
 export const getSiteProfile = unstable_cache(
   async (): Promise<SiteProfile> => {

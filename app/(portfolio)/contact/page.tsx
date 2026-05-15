@@ -1,4 +1,6 @@
-import { ContactForm } from "@/components/portfolio/contact-form"
+import { ContactForm } from "@/components/portfolio/contact/contact-form"
+import { ContactInformation } from "@/components/portfolio/contact/contact-information"
+import { getContactInfo } from "@/lib/public/site-profile"
 
 export const revalidate = 3600
 
@@ -7,16 +9,15 @@ export const metadata = {
   description: "Get in touch.",
 }
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const contact = await getContactInfo()
+
   return (
-    <main className="mx-auto max-w-lg px-4 py-12">
-      <header className="mb-8 space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">Contact</h1>
-        <p className="text-muted-foreground">
-          Send a message and I will get back to you by email.
-        </p>
-      </header>
-      <ContactForm />
+    <main className="mx-auto max-w-6xl px-4 py-12">
+      <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 lg:items-start">
+        <ContactInformation contact={contact} />
+        <ContactForm />
+      </div>
     </main>
   )
 }

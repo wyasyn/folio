@@ -1,11 +1,14 @@
 import Link from "next/link"
-import { notFound } from "next/navigation"
-import { CloudinaryImage } from "@/components/ui/cloudinary-image"
-import { MarkdownBody } from "@/components/dashboard/content/markdown-body"
+import { Suspense } from "react"
+import { BlogPostArticle } from "@/components/portfolio/blog/blog-post-article"
+import { RelatedBlogPosts } from "@/components/portfolio/blog/related-blog-posts"
+import { BlogPostDetailSkeleton } from "@/components/portfolio/skeletons/blog-post-detail-skeleton"
+import { ContentListGridSkeleton } from "@/components/portfolio/skeletons/content-list-grid-skeleton"
 import {
   getPublishedPostBySlug,
   getPublishedPostSlugs,
 } from "@/lib/public/posts"
+import { IconArrowLeft } from "@tabler/icons-react"
 
 export const revalidate = 3600
 export const dynamicParams = true
@@ -31,45 +34,21 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function BlogPostPage({ params }: PageProps) {
   const { slug } = await params
-  const post = await getPublishedPostBySlug(slug)
-  if (!post) notFound()
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-12">
       <Link
         href="/blog"
-        className="mb-8 inline-block text-sm text-muted-foreground hover:text-foreground"
+        className="mb-8 gap-2 flex items-center text-sm text-muted-foreground hover:text-foreground"
       >
-        ← Blog
+        <IconArrowLeft data-icon="inline-start" /> Blog
       </Link>
-      <article className="space-y-8">
-        {post.coverImage ? (
-          <div className="relative aspect-video w-full overflow-hidden rounded-xl border border-border">
-            <CloudinaryImage
-              src={post.coverImage}
-              alt=""
-              preset="cover"
-              fill
-              priority
-              sizes="(max-width: 768px) 100vw, 768px"
-              className="object-cover"
-            />
-          </div>
-        ) : null}
-        <header className="space-y-3">
-          <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
-            {post.title}
-          </h1>
-          {post.description ? (
-            <p className="text-lg text-muted-foreground">{post.description}</p>
-          ) : null}
-          <p className="text-sm text-muted-foreground">
-            {post.user.name ?? "Author"}
-            {post.readTime > 0 ? ` · ${post.readTime} min read` : ""}
-          </p>
-        </header>
-        <MarkdownBody markdown={post.content} />
-      </article>
+      <Suspense fallback={<BlogPostDetailSkeleton />}>
+        <BlogPostArticle slug={slug} />
+      </Suspense>
+      <Suspense fallback={<ContentListGridSkeleton count={3} className="mt-16" />}>
+        <RelatedBlogPosts slug={slug} />
+      </Suspense>
     </main>
   )
 }
