@@ -6,6 +6,7 @@ import * as React from "react"
 import {
   IconArticle,
   IconBrain,
+  IconChartBar,
   IconCamera,
   IconDotsVertical,
   IconFolder,
@@ -39,6 +40,7 @@ import { CloudinaryImage } from "@/components/ui/cloudinary-image"
 
 const sectionIcons: Record<DashboardSectionId, TablerIcon> = {
   overview: IconLayoutDashboard,
+  analytics: IconChartBar,
   projects: IconFolder,
   posts: IconArticle,
   news: IconNews,

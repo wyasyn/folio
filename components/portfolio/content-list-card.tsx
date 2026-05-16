@@ -52,7 +52,7 @@ export function ContentListCard({
             —
           </p>
         )}
-        <h2 className="line-clamp-2 text-lg font-semibold leading-snug tracking-tight">
+        <h2 className="line-clamp-2 font-sans text-lg font-medium leading-snug tracking-tight">
           {title}
         </h2>
         <p className="line-clamp-3 flex-1 text-sm text-muted-foreground">

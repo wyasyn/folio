@@ -1,9 +1,9 @@
-import db from "@/lib/db"
 import {
-  pageViewsChart,
-  profileViewsKpi,
-  topProjectsByViews,
-} from "@/lib/dashboard/overview-placeholders"
+  loadPageViewsChart,
+  loadSiteVisitsKpi,
+  loadTopProjectsByViews,
+} from "@/lib/dashboard/analytics-data"
+import db from "@/lib/db"
 
 export type StatCardData = {
   label: string
@@ -95,6 +95,9 @@ export async function loadOverviewData() {
   const months = getLast6Months()
 
   const [
+    siteVisitsKpi,
+    pageViews,
+    topProjects,
     projectsPublished,
     postsPublished,
     newsPublished,
@@ -109,6 +112,9 @@ export async function loadOverviewData() {
     recentPosts,
     ...monthlyCounts
   ] = await Promise.all([
+    loadSiteVisitsKpi(),
+    loadPageViewsChart(),
+    loadTopProjectsByViews(5),
     db.project.count({ where: { published: true } }),
     db.post.count({ where: { published: true } }),
     db.news.count({ where: { published: true } }),
@@ -215,10 +221,10 @@ export async function loadOverviewData() {
       positive: newsDelta.positive,
     },
     {
-      label: "Profile views",
-      value: profileViewsKpi.value,
-      detail: profileViewsKpi.detail,
-      positive: profileViewsKpi.positive,
+      label: "Site visits",
+      value: siteVisitsKpi.value,
+      detail: siteVisitsKpi.detail,
+      positive: siteVisitsKpi.positive,
     },
   ]
 
@@ -258,8 +264,8 @@ export async function loadOverviewData() {
     stackSlices,
     contentPublished,
     recentPosts: recent,
-    pageViews: pageViewsChart,
-    topProjects: topProjectsByViews,
+    pageViews,
+    topProjects,
   }
 }
 

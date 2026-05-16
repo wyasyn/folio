@@ -1,5 +1,5 @@
-import Link from "next/link"
 import { ContentListGrid } from "@/components/portfolio/content-list-grid"
+import { PortfolioLink } from "@/components/portfolio/portfolio-link"
 import { getPublishedProjects } from "@/lib/public/projects"
 
 export async function FeaturedProjectsSection() {
@@ -11,12 +11,15 @@ export async function FeaturedProjectsSection() {
   }
 
   return (
-    <section className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Featured projects</h2>
-        <Link href="/projects" className="text-sm text-muted-foreground hover:text-foreground">
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <h2 className="text-2xl md:text-4xl">Featured projects</h2>
+        <PortfolioLink
+          href="/projects"
+          className="text-sm text-muted-foreground hover:text-foreground"
+        >
           View all
-        </Link>
+        </PortfolioLink>
       </div>
       <ContentListGrid
         items={featured.map((project) => ({
@@ -27,6 +30,6 @@ export async function FeaturedProjectsSection() {
           coverImage: project.coverImage,
         }))}
       />
-    </section>
+    </div>
   )
 }

@@ -262,7 +262,15 @@
   }
 }
 
+body.home-featured-snap {
+  scroll-snap-type: y proximity;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  body.home-featured-snap {
+    scroll-snap-type: none;
+  }
+
   ::view-transition-old(*),
   ::view-transition-new(*),
   ::view-transition-group(*) {

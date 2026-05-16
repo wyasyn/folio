@@ -57,7 +57,7 @@ export function ContactInformation({ contact }: ContactInformationProps) {
   return (
     <section className="space-y-8">
       <div className="space-y-3">
-        <h2 className="font-heading text-2xl lg:text-4xl font-bold tracking-tight">
+        <h2 className="font-heading text-3xl md:text-7xl italic tracking-tight">
           Contact 
         </h2>
         <p className="max-w-md text-muted-foreground leading-relaxed">

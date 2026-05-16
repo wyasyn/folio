@@ -6,6 +6,7 @@ export const CACHE_TAGS = {
   projects: "projects",
   project: (slug: string) => `project:${slug}`,
   siteProfile: "site-profile",
+  sitemap: "sitemap",
   searchIndex: "search-index",
   aiSettings: "ai-settings",
   openrouterModels: "openrouter-models",

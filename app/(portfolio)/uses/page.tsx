@@ -1,18 +1,20 @@
 import Link from "next/link"
 import { usesCategories } from "@/lib/uses-data"
+import { createPageMetadata } from "@/lib/seo/metadata"
 
 export const revalidate = 3600
 
-export const metadata = {
+export const metadata = createPageMetadata({
   title: "Uses",
-  description: "Tools, hardware, and setup.",
-}
+  description: "Software, hardware, and workflows I reach for regularly.",
+  path: "/uses",
+})
 
 export default function UsesPage() {
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 py-12">
+    <main className="mx-auto w-full max-w-6xl px-4 py-12 md:py-24">
       <header className="mb-10 max-w-3xl space-y-2 text-left">
-        <h1 className="text-3xl font-bold tracking-tight">Uses</h1>
+        <h1 className="text-3xl md:text-7xl italic tracking-tight">Uses</h1>
         <p className="text-muted-foreground">
           Software, hardware, and workflows I reach for regularly.
         </p>

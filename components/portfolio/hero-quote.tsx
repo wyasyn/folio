@@ -1,6 +1,8 @@
 "use client"
 
 import { motion, useReducedMotion } from "motion/react"
+import { createStaggerContainer, fadeUp, motionEase } from "@/lib/motion/variants"
+import { homeSectionMarginY } from "@/lib/portfolio/home-spacing"
 import { cn } from "@/lib/utils"
 
 const QUOTE_LINES = [
@@ -18,30 +20,7 @@ const QUOTE_LINES = [
 
 const ATTRIBUTION = "how I work"
 
-const BASE_DELAY = 0.08
-const STAGGER = 0.12
-
-const containerVariants = {
-  hidden: {},
-  visible: {
-    transition: {
-      delayChildren: BASE_DELAY,
-      staggerChildren: STAGGER,
-    },
-  },
-}
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 16 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.65,
-      ease: [0.22, 1, 0.36, 1] as const,
-    },
-  },
-}
+const containerVariants = createStaggerContainer(0.08, 0.12)
 
 const markFade = {
   hidden: { opacity: 0, scale: 0.85 },
@@ -50,7 +29,7 @@ const markFade = {
     scale: 1,
     transition: {
       duration: 0.5,
-      ease: [0.22, 1, 0.36, 1] as const,
+      ease: motionEase,
     },
   },
 }
@@ -71,7 +50,8 @@ export function HeroQuote({ className }: { className?: string }) {
       {...motionProps}
       variants={prefersReducedMotion ? undefined : containerVariants}
       className={cn(
-        "relative mx-auto w-full max-w-4xl space-y-3 px-4 py-12 text-center md:space-y-4 md:py-16 lg:py-20",
+        "relative mx-auto w-full max-w-4xl space-y-3 px-4 py-10 text-center md:space-y-4 md:py-12 lg:py-14",
+        homeSectionMarginY,
         className,
       )}
     >

@@ -76,7 +76,7 @@ export function ContactForm() {
 
   return (
     <section className="space-y-8">
-      <div className="space-y-3 lg:mt-12">
+      <div className="space-y-3 md:mt-20">
        
         <p className="text-muted-foreground leading-relaxed">
           Fill out the form and I will get back to you within 24 hours.

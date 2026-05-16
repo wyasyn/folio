@@ -15,7 +15,8 @@ Personal portfolio and admin dashboard built with **Next.js** (App Router), **Pr
 
 - Public portfolio route group and marketing-style layout
 - Sign up / sign in with OAuth providers
-- Dashboard: overview, projects (create with Markdown content and tech stack), posts/news, profile settings
+- Dashboard: overview, analytics (page views, referrers, countries), projects (create with Markdown content and tech stack), posts/news, profile settings
+- First-party page view tracking on the public portfolio plus optional PostHog for deeper analytics
 - API routes for auth, projects, profile, and signed Cloudinary uploads
 
 ## Prerequisites
@@ -75,6 +76,15 @@ Personal portfolio and admin dashboard built with **Next.js** (App Router), **Pr
 | `BETTER_AUTH_URL` | App base URL (e.g. `http://localhost:3000` in dev, your production URL when deployed) |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth credentials |
 | `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | GitHub OAuth credentials |
+| `ANALYTICS_ENABLED` | Set to `false` to disable first-party page view ingest (default: enabled) |
+| `NEXT_PUBLIC_POSTHOG_KEY` / `NEXT_PUBLIC_POSTHOG_HOST` | Optional PostHog project key and ingest host |
+| `UPTIME_API_KEY` / `UPTIME_MONITOR_ID` | Optional UptimeRobot credentials for the dashboard uptime card |
+
+### Analytics setup
+
+1. **First-party views** — Enabled by default on public routes. Events are stored in PostgreSQL (`PageView`) and shown on **Dashboard → Overview** and **Dashboard → Analytics**.
+2. **PostHog** (optional) — Create a project at [posthog.com](https://posthog.com), add `NEXT_PUBLIC_POSTHOG_KEY` and `NEXT_PUBLIC_POSTHOG_HOST` to `.env`, and redeploy.
+3. **Uptime** — Create a monitor at [UptimeRobot](https://uptimerobot.com) pointing at `https://your-domain.com/api/health`. Add `UPTIME_API_KEY` and `UPTIME_MONITOR_ID` to show status on the overview dashboard.
 
 ## Scripts
 

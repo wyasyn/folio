@@ -1,5 +1,6 @@
 export type DashboardSectionId =
   | "overview"
+  | "analytics"
   | "projects"
   | "posts"
   | "news"
@@ -22,6 +23,11 @@ export const dashboardSections: DashboardSection[] = [
     id: "overview",
     label: "Overview",
     href: "/dashboard",
+  },
+  {
+    id: "analytics",
+    label: "Analytics",
+    href: "/dashboard/analytics",
   },
   {
     id: "projects",

@@ -1,5 +1,5 @@
-import Link from "next/link"
 import { ContentListGrid } from "@/components/portfolio/content-list-grid"
+import { PortfolioLink } from "@/components/portfolio/portfolio-link"
 import { getPublishedPosts } from "@/lib/public/posts"
 
 export async function FeaturedPostsSection() {
@@ -11,12 +11,15 @@ export async function FeaturedPostsSection() {
   }
 
   return (
-    <section className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Featured posts</h2>
-        <Link href="/blog" className="text-sm text-muted-foreground hover:text-foreground">
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <h2 className="text-2xl md:text-4xl ">Featured posts</h2>
+        <PortfolioLink
+          href="/blog"
+          className="text-sm text-muted-foreground hover:text-foreground"
+        >
           View all
-        </Link>
+        </PortfolioLink>
       </div>
       <ContentListGrid
         items={featured.map((post) => ({
@@ -27,6 +30,6 @@ export async function FeaturedPostsSection() {
           coverImage: post.coverImage,
         }))}
       />
-    </section>
+    </div>
   )
 }

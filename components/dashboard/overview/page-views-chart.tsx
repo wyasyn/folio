@@ -15,7 +15,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
-import { pageViewsChart } from "@/lib/dashboard/overview-placeholders"
+import type { PageViewsChartData } from "@/lib/dashboard/analytics-data"
 
 const chartConfig = {
   views: {
@@ -24,8 +24,12 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
-export function PageViewsChart() {
-  const { data, total, subtitle } = pageViewsChart
+type PageViewsChartProps = {
+  data: PageViewsChartData
+}
+
+export function PageViewsChart({ data }: PageViewsChartProps) {
+  const { data: chartData, total, subtitle } = data
 
   return (
     <Card className="h-full">
@@ -42,7 +46,7 @@ export function PageViewsChart() {
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="aspect-auto h-[240px] w-full">
-          <AreaChart accessibilityLayer data={[...data]}>
+          <AreaChart accessibilityLayer data={[...chartData]}>
             <CartesianGrid vertical={false} />
             <XAxis
               dataKey="month"

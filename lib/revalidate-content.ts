@@ -7,10 +7,16 @@ function revalidateSearchAndAi() {
   revalidateTag(CACHE_TAGS.searchIndex, REVALIDATE_PROFILE)
 }
 
+function revalidateSitemap() {
+  revalidateTag(CACHE_TAGS.sitemap, REVALIDATE_PROFILE)
+  revalidatePath("/sitemap.xml")
+}
+
 export function revalidatePost(slug: string, previousSlug?: string) {
   revalidateTag(CACHE_TAGS.posts, REVALIDATE_PROFILE)
   revalidateTag(CACHE_TAGS.post(slug), REVALIDATE_PROFILE)
   revalidateSearchAndAi()
+  revalidateSitemap()
   revalidatePath("/blog")
   revalidatePath(`/blog/${slug}`)
   if (previousSlug && previousSlug !== slug) {
@@ -23,6 +29,7 @@ export function revalidateNews(slug: string, previousSlug?: string) {
   revalidateTag(CACHE_TAGS.news, REVALIDATE_PROFILE)
   revalidateTag(CACHE_TAGS.newsItem(slug), REVALIDATE_PROFILE)
   revalidateSearchAndAi()
+  revalidateSitemap()
   revalidatePath("/news")
   revalidatePath(`/news/${slug}`)
   if (previousSlug && previousSlug !== slug) {
@@ -35,6 +42,7 @@ export function revalidateProject(slug: string, previousSlug?: string) {
   revalidateTag(CACHE_TAGS.projects, REVALIDATE_PROFILE)
   revalidateTag(CACHE_TAGS.project(slug), REVALIDATE_PROFILE)
   revalidateSearchAndAi()
+  revalidateSitemap()
   revalidatePath("/projects")
   revalidatePath(`/projects/${slug}`)
   if (previousSlug && previousSlug !== slug) {
@@ -46,6 +54,7 @@ export function revalidateProject(slug: string, previousSlug?: string) {
 export function revalidateSiteProfile() {
   revalidateTag(CACHE_TAGS.siteProfile, REVALIDATE_PROFILE)
   revalidateTag(CACHE_TAGS.searchIndex, REVALIDATE_PROFILE)
+  revalidateSitemap()
 }
 
 export function revalidatePortfolioSearch() {

@@ -1,8 +1,16 @@
-import { images } from '@/constants/images'
-import Image from 'next/image'
-import React from 'react'
+import type { Metadata } from "next"
+import Image from "next/image"
+import { images } from "@/constants/images"
 
-export default function AuthLayout({children}:{children:React.ReactNode}) {
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+}
+
+export default function AuthLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
     <main className='h-screen p-3'>
        

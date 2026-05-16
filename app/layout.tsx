@@ -1,9 +1,21 @@
+import type { Viewport } from "next"
 import { Roboto_Mono, Inter, Playfair_Display } from "next/font/google"
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
-import { cn } from "@/lib/utils";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils"
+import { TooltipProvider } from "@/components/ui/tooltip"
+import { createSiteMetadata, manifestThemeColor } from "@/lib/seo/metadata"
+
+export const metadata = createSiteMetadata()
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: manifestThemeColor },
+    { media: "(prefers-color-scheme: dark)", color: "#1e3a5f" },
+  ],
+  colorScheme: "light dark",
+}
 
 const playfairDisplay = Playfair_Display({subsets:['latin'],weight:[ '400', '700'],style:['normal', 'italic'], variable:'--font-heading', display: 'swap'});
 

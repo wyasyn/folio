@@ -14,7 +14,11 @@ function createPrismaClient() {
 
 /** Dev hot-reload can keep an old PrismaClient missing new models after `prisma generate`. */
 function isPrismaClientStale(client: PrismaClient) {
-  return !("openRouterModel" in client && "siteAiSettings" in client)
+  return !(
+    "openRouterModel" in client &&
+    "siteAiSettings" in client &&
+    "pageView" in client
+  )
 }
 
 const cached = globalForPrisma.prisma

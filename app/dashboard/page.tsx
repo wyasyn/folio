@@ -2,11 +2,12 @@ import { ContentPublishedChart } from "@/components/dashboard/overview/content-p
 import { OverviewStatCards } from "@/components/dashboard/overview/overview-stat-cards"
 import { PageViewsChart } from "@/components/dashboard/overview/page-views-chart"
 import { ProjectsByStackChart } from "@/components/dashboard/overview/projects-by-stack-chart"
-import { QuickActionsCard } from "@/components/dashboard/overview/quick-actions-card"
+import { UptimeStatusCard } from "@/components/dashboard/overview/uptime-status-card"
 import { RecentPostsCard } from "@/components/dashboard/overview/recent-posts-card"
 import { TopProjectsChart } from "@/components/dashboard/overview/top-projects-chart"
 import { getDashboardSectionById } from "@/lib/dashboard-navigation"
 import { loadOverviewData } from "@/lib/dashboard/overview-data"
+import { loadUptimeStatus } from "@/lib/uptime/uptime-status"
 
 function formatOverviewDate(date: Date) {
   return new Intl.DateTimeFormat("en-US", {
@@ -19,7 +20,10 @@ function formatOverviewDate(date: Date) {
 
 export default async function Page() {
   const overviewSection = getDashboardSectionById("overview")
-  const data = await loadOverviewData()
+  const [data, uptime] = await Promise.all([
+    loadOverviewData(),
+    loadUptimeStatus(),
+  ])
   const today = formatOverviewDate(new Date())
 
   return (
@@ -39,13 +43,13 @@ export default async function Page() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <PageViewsChart />
-        <TopProjectsChart />
+        <PageViewsChart data={data.pageViews} />
+        <TopProjectsChart data={data.topProjects} />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <RecentPostsCard posts={data.recentPosts} />
-        <QuickActionsCard />
+        <UptimeStatusCard status={uptime} />
       </div>
     </section>
   )

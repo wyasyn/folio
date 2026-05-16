@@ -11,7 +11,7 @@ type HeroSectionProps = {
 
 export function HeroSection({ profile }: HeroSectionProps) {
   return (
-    <section className="relative overflow-hidden  bg-background pb-16 lg:pb-32 ">
+    <section className="relative overflow-hidden bg-background pb-0">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,color-mix(in_oklch,var(--border)_30%,transparent)_1px,transparent_1px),linear-gradient(to_bottom,color-mix(in_oklch,var(--border)_30%,transparent)_1px,transparent_1px)] bg-size-[4rem_4rem] mask-[radial-gradient(ellipse_80%_60%_at_50%_0%,#000_40%,transparent_100%)]"
@@ -68,7 +68,7 @@ export function HeroSection({ profile }: HeroSectionProps) {
           </div>
         </div>
 
-        <HeroQuote className="mt-8 md:mt-12 lg:mt-16" />
+        <HeroQuote />
       </div>
     </section>
   )

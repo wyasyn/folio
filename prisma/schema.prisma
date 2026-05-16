@@ -197,3 +197,35 @@ model ChatUsageLog {
   @@index([createdAt])
   @@index([model])
 }
+
+enum AnalyticsResourceType {
+  home
+  profile
+  blog
+  blog_post
+  project
+  news
+  news_item
+  contact
+  uses
+  other
+}
+
+model PageView {
+  id           String                @id @default(cuid())
+  path         String
+  resourceType AnalyticsResourceType
+  resourceId   String?
+  slug         String?
+  referrer     String?
+  country      String?
+  deviceType   String?
+  sessionKey   String
+  createdAt    DateTime              @default(now())
+
+  @@index([createdAt])
+  @@index([resourceType, createdAt])
+  @@index([resourceId, createdAt])
+  @@index([slug, resourceType])
+  @@index([sessionKey, createdAt])
+}

@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import type { CSSProperties, ReactNode } from "react"
 import { Separator } from "@/components/ui/separator"
 import { AppSidebar } from "@/components/app-sidebar"
@@ -8,6 +9,10 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { getDashboardSession } from "@/lib/authz"
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+}
 
 type DashboardLayoutProps = {
   children: ReactNode
